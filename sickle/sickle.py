@@ -12,3 +12,4 @@
 import sys
 import os
 
+from lxml import etree
