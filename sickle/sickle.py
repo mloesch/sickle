@@ -107,8 +107,19 @@ class OAIResponse(object):
 class OAIIterator(object):
     """Iterator over OAI records/identifiers/sets transparently aggregated via
     OAI-PMH.
+
+    Can be used to conveniently iterate through the records of a repository::
+
+        >>> response = sickle.ListRecords(metadataPrefix='oai_dc')
+        >>> records = response.iter()
+        >>> records.next()
+        <Element {http://www.openarchives.org/OAI/2.0/}record at 0x1051b3b90>
+
+    :param response: The first OAI response.
+    :param sickle: The Sickle object that issued the first request.
+    :param ignore_deleted: Flag for whether to ignore deleted records.
     """
-    def __init__(self, response, sickle, deleted=False):
+    def __init__(self, response, sickle, ignore_deleted=False):
         self.sickle = sickle
         self.response = response
         self.verb = self.response.params.get("verb")
@@ -119,7 +130,7 @@ class OAIIterator(object):
             self.element = 'header'
         elif self.verb == 'ListSets':
             self.element = 'set'
-        self.deleted = deleted
+        self.ignore_deleted = ignore_deleted
         self.record_list = self._get_records(self.response)
         self.resumption_token = self._get_resumption_token(response)
         self.request = getattr(self.sickle, self.verb)
@@ -154,7 +165,7 @@ class OAIIterator(object):
     def _get_records(self, response):
         records = self.response.xml.findall(
             './/' + self.sickle.oai_namespace + self.element)
-        if not self.deleted :
+        if self.ignore_deleted:
             records = [record for record in records 
             if not self._is_deleted(record)]
         return records
