@@ -47,6 +47,7 @@ Or through the sets returned by ``ListSets``::
 Requirements
 ============
 
-* lxml
-* requests
+* requests (mandatory)
+* lxml (recommended for performance)
+
 

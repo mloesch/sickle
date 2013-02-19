@@ -13,7 +13,10 @@ import sys
 import os
 
 import requests
-from lxml import etree
+try:
+    from lxml import etree
+except ImportError:
+    from xml.etree import ElementTree as etree
 
 from __init__ import __version__
 
