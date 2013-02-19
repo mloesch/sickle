@@ -80,7 +80,12 @@ class Sickle(object):
 
 
 class OAIResponse(object):
-    """OAI response."""
+    """Represents a response from an OAI server.
+
+    :param response: The original HTTP response.
+    :param params: The OAI parameters for the request.
+    :param sickle: The Sickle object that issued the request.
+    """
     def __init__(self, response, params, sickle):
         self.params = params
         self.response = response
