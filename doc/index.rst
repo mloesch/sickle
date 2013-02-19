@@ -11,7 +11,7 @@ Sickle: An OAI Client Library for Python
 
 
 
-Sickle is an OAI-PMH client library written in Python.  It has been designed
+Sickle is lightweight OAI-PMH client library written in Python.  It has been designed
 to provide different levels of abstraction when communicating with OAI-PMH
 interfaces::
 
@@ -29,7 +29,7 @@ But also to the raw response for debugging::
     u'<?xml version=\'1.0\' encoding ...'
 
 
-This is especially useful if you want to access OAI interfaces with broken XML.
+This is especially useful if you want to access OAI interfaces with broken XML.  
 Most importantly, Sickle lets you convienently iterate through resumption batches
 without having to deal with ``resumptionTokens`` yourself::
 
@@ -52,11 +52,4 @@ Or through the sets returned by ``ListSets``::
     >>> sets = response.iter()
     >>> sets.next()
     <Element {http://www.openarchives.org/OAI/2.0/}set at 0x1051b6cd0>
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
 
