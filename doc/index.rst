@@ -9,7 +9,7 @@ Sickle: An OAI Client Library for Python
 .. toctree::
    :maxdepth: 2
 
-
+   api
 
 Sickle is lightweight OAI-PMH client library written in Python.  It has been designed
 to provide different levels of abstraction when communicating with OAI-PMH
