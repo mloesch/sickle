@@ -4,7 +4,7 @@
     ~~~~~~
 
     An OAI-PHM client.
-    
+
     :copyright: Copright 2013 Mathias Loesch
 """
 

@@ -44,7 +44,7 @@ class Sickle(object):
         self.http_method = http_method
         self.protocol_version = protocol_version
         self.oai_namespace = OAI_NAMESPACE % self.protocol_version
-    
+
     def harvest(self, **kwargs):
         """Make an HTTP request to the OAI server."""
         if self.http_method == 'GET':
@@ -134,7 +134,7 @@ class OAIResponse(object):
         self.params = params
         self.response = response
         self.sickle = sickle
-    
+
     @property
     def raw(self):
         """The server's response as unicode."""
@@ -153,14 +153,15 @@ class OAIResponse(object):
             - ListIdentifiers
             - ListSets
 
-        
-         Raises NotImplementedError if called on a response for a non-eligible OAI request 
+
+         Raises NotImplementedError if called on a response for a non-eligible OAI request
          (e.g., Identify).
 
         :rtype: :class:`sickle.app.OAIIterator`
         """
         if self.params.get("verb") not in ['ListRecords', 'ListSets', 'ListIdentifiers']:
-            raise NotImplementedError, '%s can not be iterated' % self.params.get("verb")
+            raise NotImplementedError(
+                '%s can not be iterated' % self.params.get("verb"))
         else:
             return OAIIterator(self, self.sickle)
 
@@ -233,15 +234,17 @@ class OAIIterator(object):
         records = self.oai_response.xml.findall(
             './/' + self.sickle.oai_namespace + self.element)
         if self.ignore_deleted:
-            records = [record for record in records 
-            if not self._is_deleted(record)]
+            records = [record for record in records
+                       if not self._is_deleted(record)]
         return records
 
     def _next_batch(self):
         while self.record_list == []:
-            self.oai_response = self.request(resumptionToken=self.resumption_token)
+            self.oai_response = self.request(
+                resumptionToken=self.resumption_token)
             self.record_list = self._get_records(self.oai_response)
-            self.resumption_token = self._get_resumption_token(self.oai_response)
+            self.resumption_token = self._get_resumption_token(
+                self.oai_response)
             if self.record_list == [] and self.resumption_token is None:
                 raise StopIteration
 
@@ -252,4 +255,3 @@ class OAIIterator(object):
             self._next_batch()
         current_record = self.record_list.pop()
         return current_record
-
