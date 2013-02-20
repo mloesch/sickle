@@ -1,2 +1,6 @@
 doc/_build
 *.pyc
+build/
+dist/
+sickle.egg-info/
+tests/
