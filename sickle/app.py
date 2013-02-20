@@ -9,9 +9,6 @@
 """
 
 
-import sys
-import os
-
 import requests
 try:
     from lxml import etree
@@ -192,6 +189,7 @@ class OAIIterator(object):
         self.oai_response = oai_response
         self.verb = self.oai_response.params.get("verb")
 
+        # Determine on what element to iterate (records, headers, or sets)
         if self.verb == 'ListRecords':
             self.element = 'record'
         elif self.verb == 'ListIdentifiers':
@@ -199,8 +197,8 @@ class OAIIterator(object):
         elif self.verb == 'ListSets':
             self.element = 'set'
         self.ignore_deleted = ignore_deleted
-        self.record_list = self._get_records(self.oai_response)
-        self.resumption_token = self._get_resumption_token(oai_response)
+        self.record_list = self._get_records()
+        self.resumption_token = self._get_resumption_token()
         self.request = getattr(self.sickle, self.verb)
 
     def __iter__(self):
@@ -210,19 +208,26 @@ class OAIIterator(object):
         return '<OAIIterator %s>' % self.verb
 
     def _is_deleted(self, record):
+        """Return True if a record/header is deleted, False otherwise.
+
+        :param record: XML element.
+        :rtype: bool
+        """
         if self.element == 'record':
             header = record.find('.//' + self.sickle.oai_namespace + 'header')
         elif self.element == 'header':
             # work on header element directly in case of ListIdentifiers
             header = record
         else:
+            # sets cannot be deleted
             return False
         if header.attrib.get('status') == 'deleted':
             return True
         else:
             return False
 
-    def _get_resumption_token(self, oai_response):
+    def _get_resumption_token(self):
+        """Extract the resumptionToken from the OAI response."""
         resumption_token = self.oai_response.xml.find(
             './/' + self.sickle.oai_namespace + 'resumptionToken')
         if resumption_token is None:
@@ -230,7 +235,8 @@ class OAIIterator(object):
         else:
             return resumption_token.text
 
-    def _get_records(self, oai_response):
+    def _get_records(self):
+        """Extract records/headers/sets from the OAI response."""
         records = self.oai_response.xml.findall(
             './/' + self.sickle.oai_namespace + self.element)
         if self.ignore_deleted:
@@ -239,16 +245,17 @@ class OAIIterator(object):
         return records
 
     def _next_batch(self):
+        """Get the next response from the OAI server."""
         while self.record_list == []:
             self.oai_response = self.request(
                 resumptionToken=self.resumption_token)
-            self.record_list = self._get_records(self.oai_response)
-            self.resumption_token = self._get_resumption_token(
-                self.oai_response)
+            self.record_list = self._get_records()
+            self.resumption_token = self._get_resumption_token()
             if self.record_list == [] and self.resumption_token is None:
                 raise StopIteration
 
     def next(self):
+        """Return the next record/header/set."""
         if (not self.record_list and self.resumption_token is None):
             raise StopIteration
         elif len(self.record_list) == 0:
