@@ -322,12 +322,12 @@ class Record(object):
         self._record_element = record_element
         self._strip_ns = strip_ns
         self._oai_namespace = get_namespace(self._record_element)
-        self.header = xml_to_dict(self._record_element.getchildren()[0], 
+        self.header = Header(self._record_element.getchildren()[0], 
                         strip_ns=True)
         self.metadata = xml_to_dict(self._record_element.getchildren()[1],
                          strip_ns=self._strip_ns)
 
     def __repr__(self):
-        return '<Record %s>' % self.header['identifier'][0]
+        return '<Record %s>' % self.header.identifier
 
 
