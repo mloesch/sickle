@@ -9,6 +9,8 @@
 """
 
 
+import re
+from collections import defaultdict
 import requests
 try:
     from lxml import etree
@@ -17,6 +19,34 @@ except ImportError:
 
 
 OAI_NAMESPACE = '{http://www.openarchives.org/OAI/%s/}'
+
+
+
+def get_namespace(element):
+    """Return the namespace of an XML element.
+
+    :param element: An XML element.
+    """
+    return re.search('(\{.*\})', element.tag).group(1)
+
+
+def xml_to_dict(tree, paths=['.//'], nsmap={}, strip_ns=False):
+    """Convert an XML tree to a dictionary.
+
+    :param paths: An optional list of XPath expressions applied on the XML tree.
+    :param nsmap: An optional prefix-namespace mapping for conciser spec of paths.
+    :param strip_ns: Flag for whether to remove the namespaces from the tags.
+    """
+    df = defaultdict(list)
+    for path in paths:
+        elements = tree.findall(path, nsmap)
+        for element in elements:
+            tag = element.tag
+            if strip_ns:
+                tag = re.sub(r'\{.*\}', '', tag)
+            df[tag].append(element.text)
+    return dict(df)
+
 
 
 class Sickle(object):
@@ -115,8 +145,8 @@ class OAIResponse(object):
     Provides access to the returned data on different abstraction
     levels::
 
-         >>> response = sickle.ListRecords(metadataPrefix='oai_dc')
-         >>> response.xml
+        >>> response = sickle.ListRecords(metadataPrefix='oai_dc')
+        >>> response.xml
         <Element {http://www.openarchives.org/OAI/2.0/}OAI-PMH at 0x10469a8c0>
         >>> response.raw
         u'<?xml version=\'1.0\' encoding ...'
@@ -142,7 +172,7 @@ class OAIResponse(object):
         """The server's response as parsed XML."""
         return etree.XML(self.response.text.encode("utf8"))
 
-    def iter(self):
+    def iter(self, convert=None):
         """Iterate through the resulting records of the request.
 
         Iterable OAI verbs are:
@@ -160,7 +190,7 @@ class OAIResponse(object):
             raise NotImplementedError(
                 '%s can not be iterated' % self.params.get("verb"))
         else:
-            return OAIIterator(self, self.sickle)
+            return OAIIterator(self, self.sickle, convert=convert)
 
     def __repr__(self):
         return '<OAIResponse %s>' % self.params.get('verb')
@@ -184,7 +214,7 @@ class OAIIterator(object):
     :param ignore_deleted: Flag for whether to ignore deleted records.
     :type ignore_deleted: bool
     """
-    def __init__(self, oai_response, sickle, ignore_deleted=False):
+    def __init__(self, oai_response, sickle, convert=None, ignore_deleted=False):
         self.sickle = sickle
         self.oai_response = oai_response
         self.verb = self.oai_response.params.get("verb")
@@ -196,6 +226,7 @@ class OAIIterator(object):
             self.element = 'header'
         elif self.verb == 'ListSets':
             self.element = 'set'
+        self.convert = convert
         self.ignore_deleted = ignore_deleted
         self.record_list = self._get_records()
         self.resumption_token = self._get_resumption_token()
@@ -261,4 +292,25 @@ class OAIIterator(object):
         elif len(self.record_list) == 0:
             self._next_batch()
         current_record = self.record_list.pop()
-        return current_record
+        if self.convert:
+            return self.convert(current_record)
+        else:
+            return current_record
+
+
+class Record(object):
+    """Represents an OAI record."""
+    def __init__(self, record_element, strip_ns=True):
+        super(Record, self).__init__()
+        self._record_element = record_element
+        self._strip_ns = strip_ns
+        self._oai_namespace = get_namespace(self._record_element)
+        self.header = xml_to_dict(self._record_element.getchildren()[0], 
+                        strip_ns=True)
+        self.metadata = xml_to_dict(self._record_element.getchildren()[1],
+                         strip_ns=self._strip_ns)
+
+    def __repr__(self):
+        return '<Record %s>' % self.header['identifier'][0]
+
+
