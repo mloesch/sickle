@@ -298,6 +298,23 @@ class OAIIterator(object):
             return current_record
 
 
+class Header(object):
+    """Represents an OAI Header."""
+    def __init__(self, header_element, strip_ns=True):
+        self._header_element = header_element
+        self._strip_ns = strip_ns
+        self._oai_namespace = get_namespace(self._header_element)
+        
+        self.identifier = self._header_element.find(self._oai_namespace + 'identifier').text
+        self.datestamp = self._header_element.find(self._oai_namespace + 'datestamp').text
+        self.setSpecs = [setSpec.text for setSpec in 
+                self._header_element.findall(self._oai_namespace + 'setSpec')]
+        
+    def __repr__(self):
+        return '<Header %s>' % self.identifier
+
+
+
 class Record(object):
     """Represents an OAI record."""
     def __init__(self, record_element, strip_ns=True):
