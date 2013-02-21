@@ -175,7 +175,7 @@ htmlhelp_basename = 'Sickledoc'
 
 latex_elements = {
     'papersize': 'a4paper',
-    'pointsize': '12pt',
+    # 'pointsize': '12pt',
     'preamble': '\\usepackage{mathpazo}\n\\pagenumbering{arabic}\n\\pagestyle{plain}',
 }
 
