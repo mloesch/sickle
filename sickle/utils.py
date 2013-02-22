@@ -27,12 +27,12 @@ def xml_to_dict(tree, paths=['.//'], nsmap={}, strip_ns=False):
     :param nsmap: An optional prefix-namespace mapping for conciser spec of paths.
     :param strip_ns: Flag for whether to remove the namespaces from the tags.
     """
-    df = defaultdict(list)
+    fields = defaultdict(list)
     for path in paths:
         elements = tree.findall(path, nsmap)
         for element in elements:
             tag = element.tag
             if strip_ns:
                 tag = re.sub(r'\{.*\}', '', tag)
-            df[tag].append(element.text)
-    return dict(df)
+            fields[tag].append(element.text)
+    return dict(fields)

@@ -10,7 +10,7 @@
 
 
 from .utils import get_namespace, xml_to_dict
-
+from lxml import etree
 
 class Header(object):
     """Represents an OAI Header."""
@@ -20,8 +20,10 @@ class Header(object):
         self._oai_namespace = get_namespace(self._header_element)
         
         self.deleted = self._header_element.attrib.get('status') == 'deleted'
-        self.identifier = self._header_element.find(self._oai_namespace + 'identifier').text
-        self.datestamp = self._header_element.find(self._oai_namespace + 'datestamp').text
+        self.identifier = self._header_element.find(
+                            self._oai_namespace + 'identifier').text
+        self.datestamp = self._header_element.find(
+                            self._oai_namespace + 'datestamp').text
         self.setSpecs = [setSpec.text for setSpec in 
                 self._header_element.findall(self._oai_namespace + 'setSpec')]
         
@@ -33,10 +35,12 @@ class Header(object):
 
     @property
     def raw(self):
+        """The server's response as unicode."""
         return etree.tounicode(self._header_element)
 
     @property
     def xml(self):
+        """The server's response as parsed XML."""
         return self._header_element
 
 
@@ -62,15 +66,17 @@ class Record(object):
             return '<Record %s>' % self.header.identifier
 
     def __iter__(self):
-        for k,v in self.metadata.items():
+        for k, v in self.metadata.items():
             yield (k, v)
 
     @property
     def raw(self):
+        """The server's response as unicode."""
         return etree.tounicode(self._record_element)
 
     @property
     def xml(self):
+        """The server's response as parsed XML."""
         return self._record_element
 
 
@@ -91,12 +97,14 @@ class Set(object):
         return '<Set %s>' % self.setName
 
     def __iter__(self):
-        return (setName, setSpec)
+        return (self.setName, self.setSpec)
 
     @property
     def raw(self):
+        """The server's response as unicode."""
         return etree.tounicode(self._set_element)
 
     @property
     def xml(self):
+        """The server's response as parsed XML."""
         return self._set_element

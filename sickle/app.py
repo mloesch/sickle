@@ -203,7 +203,7 @@ class OAIIterator(object):
             self.mapper = Set
         self._items = self.oai_response.xml.iterfind(
             './/' + self.sickle.oai_namespace + self.element)
-        self._get_resumption_token()
+        self.resumption_token = self._get_resumption_token()
         self.ignore_deleted = ignore_deleted
         self.request = getattr(self.sickle, self.verb)
 
@@ -214,18 +214,19 @@ class OAIIterator(object):
         return '<OAIIterator %s>' % self.verb
 
     def _get_resumption_token(self):
+        """Extract and store the resumptionToken from the last response."""
         resumption_token = self.oai_response.xml.find(
             './/' + self.sickle.oai_namespace + 'resumptionToken')
         if resumption_token is None:
-            self.resumption_token = None
+            return None
         else:
-            self.resumption_token = resumption_token.text
+            return resumption_token.text
 
     def _next_response(self):
         """Get the next response from the OAI server."""
         print "DEBUG: fetching %s" % self.resumption_token
         self.oai_response = self.request(resumptionToken=self.resumption_token)
-        self._get_resumption_token()
+        self.resumption_token = self._get_resumption_token()
         self._items = self.oai_response.xml.iterfind(
             './/' + self.sickle.oai_namespace + self.element)
 
@@ -247,4 +248,3 @@ class OAIIterator(object):
                     if self.ignore_deleted and mapped.deleted:
                         continue
                     return mapped
-
