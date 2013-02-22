@@ -21,7 +21,6 @@ except ImportError:
 OAI_NAMESPACE = '{http://www.openarchives.org/OAI/%s/}'
 
 
-
 def get_namespace(element):
     """Return the namespace of an XML element.
 
@@ -172,7 +171,7 @@ class OAIResponse(object):
         """The server's response as parsed XML."""
         return etree.XML(self.response.text.encode("utf8"))
 
-    def iter(self, convert=None):
+    def iter(self):
         """Iterate through the resulting records of the request.
 
         Iterable OAI verbs are:
@@ -190,7 +189,7 @@ class OAIResponse(object):
             raise NotImplementedError(
                 '%s can not be iterated' % self.params.get("verb"))
         else:
-            return OAIIterator(self, self.sickle, convert=convert)
+            return OAIIterator(self, self.sickle)
 
     def __repr__(self):
         return '<OAIResponse %s>' % self.params.get('verb')
@@ -214,7 +213,7 @@ class OAIIterator(object):
     :param ignore_deleted: Flag for whether to ignore deleted records.
     :type ignore_deleted: bool
     """
-    def __init__(self, oai_response, sickle, convert=None, ignore_deleted=False):
+    def __init__(self, oai_response, sickle, ignore_deleted=False):
         self.sickle = sickle
         self.oai_response = oai_response
         self.verb = self.oai_response.params.get("verb")
@@ -222,11 +221,13 @@ class OAIIterator(object):
         # Determine on what element to iterate (records, headers, or sets)
         if self.verb == 'ListRecords':
             self.element = 'record'
+            self.mapper = Record
         elif self.verb == 'ListIdentifiers':
             self.element = 'header'
+            self.mapper = Header
         elif self.verb == 'ListSets':
             self.element = 'set'
-        self.convert = convert
+            self.mapper = Set
         self.ignore_deleted = ignore_deleted
         self.record_list = self._get_records()
         self.resumption_token = self._get_resumption_token()
@@ -273,6 +274,7 @@ class OAIIterator(object):
         if self.ignore_deleted:
             records = [record for record in records
                        if not self._is_deleted(record)]
+        records = [self.mapper(record) for record in records]
         return records
 
     def _next_batch(self):
@@ -292,10 +294,7 @@ class OAIIterator(object):
         elif len(self.record_list) == 0:
             self._next_batch()
         current_record = self.record_list.pop()
-        if self.convert:
-            return self.convert(current_record)
-        else:
-            return current_record
+        return current_record
 
 
 class Header(object):
@@ -313,6 +312,14 @@ class Header(object):
     def __repr__(self):
         return '<Header %s>' % self.identifier
 
+    def __iter__(self):
+        
+        
+    def raw(self):
+        return etree.tounicode(self._header_element)
+
+    def xml(self):
+        return self._header_element
 
 
 class Record(object):
@@ -329,5 +336,45 @@ class Record(object):
 
     def __repr__(self):
         return '<Record %s>' % self.header.identifier
+
+    def __iter__(self):
+        for k,v in self.metadata.items():
+            yield (k, v)
+
+    @property
+    def raw(self):
+        return etree.tounicode(self._record_element)
+
+    @property
+    def xml(self):
+        return self._record_element
+
+
+class Set(object):
+    """Represents an OAI set."""
+    def __init__(self, set_element, strip_ns=True):
+        super(Set, self).__init__()
+        self._set_element = set_element
+        self._strip_ns = strip_ns
+        self._oai_namespace = get_namespace(self._set_element)
+        self.setName = self._set_element.find(
+                        self._oai_namespace + 'setName').text
+        self.setSpec = self._set_element.find(
+                        self._oai_namespace + 'setSpec').text
+
+    def __repr__(self):
+        return '<Set %s>' % self.setName
+
+    def __iter__(self):
+        return (setName, setSpec)
+
+    @property
+    def raw(self):
+        return etree.tounicode(self._set_element)
+
+    @property
+    def xml(self):
+        return self._set_element
+    
 
 
