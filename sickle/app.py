@@ -159,9 +159,10 @@ class OAIResponse(object):
         :type ignore_deleted: bool
         :rtype: :class:`sickle.app.OAIIterator`
         """
-        if self.params.get("verb") not in ['ListRecords', 'ListSets', 'ListIdentifiers']:
+        if self.params.get("verb") not in ['ListRecords', 'ListSets', 
+        'ListIdentifiers', 'ListMetadataFormats']:
             raise NotImplementedError(
-                '%s can not be iterated' % self.params.get("verb"))
+                '%s response is not iterable' % self.params.get("verb"))
         else:
             return OAIIterator(self, self.sickle, ignore_deleted=ignore_deleted)
 

@@ -8,7 +8,6 @@
     :copyright: Copright 2013 Mathias Loesch
 """
 
-
 from .utils import get_namespace, xml_to_dict
 from lxml import etree
 
@@ -32,6 +31,21 @@ class Header(object):
             return '<Header %s [deleted]>' % self.identifier
         else:
             return '<Header %s>' % self.identifier
+
+    def __str__(self):
+        return etree.tounicode(self._header_element).encode("utf8")
+
+    def __unicode__(self):
+        return etree.tounicode(self._header_element)
+
+    def __iter__(self):
+        list_repr = [
+            ('identifier', self.identifier), 
+            ('datestamp', self.datestamp),
+            ('setSpecs', self.setSpecs)
+        ]
+        for k, v in list_repr:
+            yield k, v
 
     @property
     def raw(self):
@@ -57,7 +71,7 @@ class Record(object):
         if not self.deleted:
             self.metadata = xml_to_dict(self._record_element.getchildren()[1],
                          strip_ns=self._strip_ns)
-        
+
 
     def __repr__(self):
         if self.header.deleted:
@@ -68,6 +82,12 @@ class Record(object):
     def __iter__(self):
         for k, v in self.metadata.items():
             yield (k, v)
+
+    def __unicode__(self):
+        return etree.tounicode(self._record_element)
+
+    def __str__(self):
+        return etree.tounicode(self._record_element).encode('utf8')
 
     @property
     def raw(self):
@@ -94,10 +114,17 @@ class Set(object):
                         self._oai_namespace + 'setSpec').text
 
     def __repr__(self):
-        return '<Set %s>' % self.setName
+        return u'<Set %s>'.encode("utf8") % self.setName
 
     def __iter__(self):
-        return (self.setName, self.setSpec)
+        for element in [(self.setName, self.setSpec)]:
+            yield element
+
+    def __str__(self):
+        return etree.tounicode(self._set_element).encode("utf8")
+
+    def __unicode__(self):
+        return etree.tounicode(self._set_element)
 
     @property
     def raw(self):
