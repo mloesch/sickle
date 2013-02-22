@@ -9,8 +9,7 @@
 """
 
 
-import re
-from collections import defaultdict
+from .models import Set, Record, Header
 import requests
 try:
     from lxml import etree
@@ -19,33 +18,6 @@ except ImportError:
 
 
 OAI_NAMESPACE = '{http://www.openarchives.org/OAI/%s/}'
-
-
-def get_namespace(element):
-    """Return the namespace of an XML element.
-
-    :param element: An XML element.
-    """
-    return re.search('(\{.*\})', element.tag).group(1)
-
-
-def xml_to_dict(tree, paths=['.//'], nsmap={}, strip_ns=False):
-    """Convert an XML tree to a dictionary.
-
-    :param paths: An optional list of XPath expressions applied on the XML tree.
-    :param nsmap: An optional prefix-namespace mapping for conciser spec of paths.
-    :param strip_ns: Flag for whether to remove the namespaces from the tags.
-    """
-    df = defaultdict(list)
-    for path in paths:
-        elements = tree.findall(path, nsmap)
-        for element in elements:
-            tag = element.tag
-            if strip_ns:
-                tag = re.sub(r'\{.*\}', '', tag)
-            df[tag].append(element.text)
-    return dict(df)
-
 
 
 class Sickle(object):
@@ -171,7 +143,7 @@ class OAIResponse(object):
         """The server's response as parsed XML."""
         return etree.XML(self.response.text.encode("utf8"))
 
-    def iter(self):
+    def iter(self, ignore_deleted=False):
         """Iterate through the resulting records of the request.
 
         Iterable OAI verbs are:
@@ -183,13 +155,15 @@ class OAIResponse(object):
          Raises NotImplementedError if called on a response for a non-eligible OAI request
          (e.g., Identify).
 
+        :param ignore_deleted: Flag for whether to ignore deleted records.
+        :type ignore_deleted: bool
         :rtype: :class:`sickle.app.OAIIterator`
         """
         if self.params.get("verb") not in ['ListRecords', 'ListSets', 'ListIdentifiers']:
             raise NotImplementedError(
                 '%s can not be iterated' % self.params.get("verb"))
         else:
-            return OAIIterator(self, self.sickle)
+            return OAIIterator(self, self.sickle, ignore_deleted=ignore_deleted)
 
     def __repr__(self):
         return '<OAIResponse %s>' % self.params.get('verb')
@@ -217,7 +191,6 @@ class OAIIterator(object):
         self.sickle = sickle
         self.oai_response = oai_response
         self.verb = self.oai_response.params.get("verb")
-
         # Determine on what element to iterate (records, headers, or sets)
         if self.verb == 'ListRecords':
             self.element = 'record'
@@ -228,9 +201,10 @@ class OAIIterator(object):
         elif self.verb == 'ListSets':
             self.element = 'set'
             self.mapper = Set
+        self._items = self.oai_response.xml.iterfind(
+            './/' + self.sickle.oai_namespace + self.element)
+        self._get_resumption_token()
         self.ignore_deleted = ignore_deleted
-        self.record_list = self._get_records()
-        self.resumption_token = self._get_resumption_token()
         self.request = getattr(self.sickle, self.verb)
 
     def __iter__(self):
@@ -239,142 +213,38 @@ class OAIIterator(object):
     def __repr__(self):
         return '<OAIIterator %s>' % self.verb
 
-    def _is_deleted(self, record):
-        """Return True if a record/header is deleted, False otherwise.
-
-        :param record: XML element.
-        :rtype: bool
-        """
-        if self.element == 'record':
-            header = record.find('.//' + self.sickle.oai_namespace + 'header')
-        elif self.element == 'header':
-            # work on header element directly in case of ListIdentifiers
-            header = record
-        else:
-            # sets cannot be deleted
-            return False
-        if header.attrib.get('status') == 'deleted':
-            return True
-        else:
-            return False
-
     def _get_resumption_token(self):
-        """Extract the resumptionToken from the OAI response."""
         resumption_token = self.oai_response.xml.find(
             './/' + self.sickle.oai_namespace + 'resumptionToken')
         if resumption_token is None:
-            return None
+            self.resumption_token = None
         else:
-            return resumption_token.text
+            self.resumption_token = resumption_token.text
 
-    def _get_records(self):
-        """Extract records/headers/sets from the OAI response."""
-        records = self.oai_response.xml.findall(
-            './/' + self.sickle.oai_namespace + self.element)
-        if self.ignore_deleted:
-            records = [record for record in records
-                       if not self._is_deleted(record)]
-        records = [self.mapper(record) for record in records]
-        return records
-
-    def _next_batch(self):
+    def _next_response(self):
         """Get the next response from the OAI server."""
-        while self.record_list == []:
-            self.oai_response = self.request(
-                resumptionToken=self.resumption_token)
-            self.record_list = self._get_records()
-            self.resumption_token = self._get_resumption_token()
-            if self.record_list == [] and self.resumption_token is None:
-                raise StopIteration
+        print "DEBUG: fetching %s" % self.resumption_token
+        self.oai_response = self.request(resumptionToken=self.resumption_token)
+        self._get_resumption_token()
+        self._items = self.oai_response.xml.iterfind(
+            './/' + self.sickle.oai_namespace + self.element)
 
     def next(self):
         """Return the next record/header/set."""
-        if (not self.record_list and self.resumption_token is None):
-            raise StopIteration
-        elif len(self.record_list) == 0:
-            self._next_batch()
-        current_record = self.record_list.pop()
-        return current_record
-
-
-class Header(object):
-    """Represents an OAI Header."""
-    def __init__(self, header_element, strip_ns=True):
-        self._header_element = header_element
-        self._strip_ns = strip_ns
-        self._oai_namespace = get_namespace(self._header_element)
-        
-        self.identifier = self._header_element.find(self._oai_namespace + 'identifier').text
-        self.datestamp = self._header_element.find(self._oai_namespace + 'datestamp').text
-        self.setSpecs = [setSpec.text for setSpec in 
-                self._header_element.findall(self._oai_namespace + 'setSpec')]
-        
-    def __repr__(self):
-        return '<Header %s>' % self.identifier
-
-    def __iter__(self):
-        
-        
-    def raw(self):
-        return etree.tounicode(self._header_element)
-
-    def xml(self):
-        return self._header_element
-
-
-class Record(object):
-    """Represents an OAI record."""
-    def __init__(self, record_element, strip_ns=True):
-        super(Record, self).__init__()
-        self._record_element = record_element
-        self._strip_ns = strip_ns
-        self._oai_namespace = get_namespace(self._record_element)
-        self.header = Header(self._record_element.getchildren()[0], 
-                        strip_ns=True)
-        self.metadata = xml_to_dict(self._record_element.getchildren()[1],
-                         strip_ns=self._strip_ns)
-
-    def __repr__(self):
-        return '<Record %s>' % self.header.identifier
-
-    def __iter__(self):
-        for k,v in self.metadata.items():
-            yield (k, v)
-
-    @property
-    def raw(self):
-        return etree.tounicode(self._record_element)
-
-    @property
-    def xml(self):
-        return self._record_element
-
-
-class Set(object):
-    """Represents an OAI set."""
-    def __init__(self, set_element, strip_ns=True):
-        super(Set, self).__init__()
-        self._set_element = set_element
-        self._strip_ns = strip_ns
-        self._oai_namespace = get_namespace(self._set_element)
-        self.setName = self._set_element.find(
-                        self._oai_namespace + 'setName').text
-        self.setSpec = self._set_element.find(
-                        self._oai_namespace + 'setSpec').text
-
-    def __repr__(self):
-        return '<Set %s>' % self.setName
-
-    def __iter__(self):
-        return (setName, setSpec)
-
-    @property
-    def raw(self):
-        return etree.tounicode(self._set_element)
-
-    @property
-    def xml(self):
-        return self._set_element
-    
-
+        try:
+            while True:
+                mapped = self.mapper(self._items.next())
+                if self.ignore_deleted and mapped.deleted:
+                    continue
+                return mapped
+        except StopIteration:
+            if self.resumption_token is None:
+                raise StopIteration
+            else:
+                self._next_response()
+                while True:
+                    mapped = self.mapper(self._items.next())
+                    if self.ignore_deleted and mapped.deleted:
+                        continue
+                    return mapped
 
