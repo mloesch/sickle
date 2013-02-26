@@ -8,7 +8,7 @@
     :copyright: Copright 2013 Mathias Loesch
 """
 
-__version__ = '0.1'
+__version__ = '0.2'
 
 
 from .app import Sickle
