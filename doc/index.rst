@@ -17,40 +17,25 @@ to provide different levels of abstraction when communicating with OAI-PMH
 interfaces::
 
     >>> sickle = Sickle('http://elis.da.ulcc.ac.uk/cgi/oai2')
-    >>> response = sickle.ListRecords(metadataPrefix='oai_dc')
+    >>> records = sickle.ListRecords(metadataPrefix='oai_dc')
 
-Sickle provides access to the parsed XML for convenience::
-    
-    >>> response.xml
-    <Element {http://www.openarchives.org/OAI/2.0/}OAI-PMH at 0x10469a8c0>
-
-But also to the raw response for debugging::
-
-    >>> response.raw
-    u'<?xml version=\'1.0\' encoding ...'
-
-
-This is especially useful if you want to access OAI interfaces with broken XML.  
 Most importantly, Sickle lets you convienently iterate through resumption batches
 without having to deal with ``resumptionTokens`` yourself::
 
-    >>> response = sickle.ListRecords(metadataPrefix='oai_dc')
-    >>> records = response.iter()
     >>> records.next()
-    <Element {http://www.openarchives.org/OAI/2.0/}record at 0x1051b3b90>
+    <Record oai:eprints.rclis.org:4088>
 
-Note that this works with all requests that support the resumptionToken parameter.
-Like for iterating through the headers returned by ``ListIdentifiers``::
+Sickle maps the OAI XML to Python objects::
+  
+    >>> record = records.next()
+    >>> record.header
+    <Header oai:eprints.rclis.org:4088>
+    >>> record.header.identifier
+    'oai:eprints.rclis.org:4088'
 
-    >>> response = sickle.ListIdentifiers(metadataPrefix='oai_dc')
-    >>> headers = response.iter()
-    >>> headers.next()
-    <Element {http://www.openarchives.org/OAI/2.0/}header at 0x1051b1c30>
+The metadata payload is stored as a dictionary::
 
-Or through the sets returned by ``ListSets``::
-    
-    >>> response = sickle.ListSets()
-    >>> sets = response.iter()
-    >>> sets.next()
-    <Element {http://www.openarchives.org/OAI/2.0/}set at 0x1051b6cd0>
-
+    >>> record.metadata
+    {'creator': ['Melloni, Marco'],
+     'date': ['2000'],
+     'description': [u'A web site for...
