@@ -8,10 +8,8 @@
     :copyright: Copright 2013 Mathias Loesch
 """
 
-from .utils import get_namespace, xml_to_dict
-
 from lxml import etree
-
+from .utils import get_namespace, xml_to_dict
 
 class OAIItem(object):
     """A generic OAI item.
@@ -22,6 +20,8 @@ class OAIItem(object):
     """
     def __init__(self, xml, strip_ns=True):
         super(OAIItem, self).__init__()
+        
+        #: The original parsed XML
         self.xml = xml
         self._strip_ns = strip_ns
         self._oai_namespace = get_namespace(self.xml)
@@ -30,11 +30,6 @@ class OAIItem(object):
         return etree.tounicode(self.xml).encode("utf8")
 
     def __unicode__(self):
-        return etree.tounicode(self.xml)
-
-    @property
-    def xml(self):
-        """The original parsed XML."""
         return etree.tounicode(self.xml)
 
     @property

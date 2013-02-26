@@ -31,12 +31,13 @@ class Sickle(object):
     Use it like this::
 
         >>> sickle = Sickle('http://elis.da.ulcc.ac.uk/cgi/oai2')
-        >>> response = sickle.ListRecords(metadataPrefix='oai_dc')
-
+        >>> records = sickle.ListRecords(metadataPrefix='oai_dc')
+        >>> records.next()
+        <Record oai:eprints.rclis.org:3780>
 
     :param endpoint: The endpoint of the OAI interface.
     :type endpoint: str
-    :param http_method: Method used for requests (GET or POST).
+    :param http_method: Method used for requests (GET or POST, default: GET).
     :type http_method: str
     :param protocol_version: The OAI protocol version.
     :type protocol_version: str
@@ -50,7 +51,10 @@ class Sickle(object):
         self.last_response = None
 
     def harvest(self, **kwargs):
-        """Make an HTTP request to the OAI server."""
+        """Make an HTTP request to the OAI server.
+
+        :rtype: :class:`sickle.app.OAIResponse`
+        """
         if self.http_method == 'GET':
             return OAIResponse(requests.get(self.endpoint, params=kwargs), 
                 params=kwargs)
@@ -59,9 +63,12 @@ class Sickle(object):
                 params=kwargs)
 
     def ListRecords(self, ignore_deleted=False, **kwargs):
-        """Issue a ListRecords request.e
+        """Issue a ListRecords request.
 
-        :rtype: :class:`~sickle.app.OAIResponse`
+        :param ignore_deleted: If set to :obj:`True`, the resulting 
+                              :class:`sickle.app.OAIIterator` will skip records
+                              flagged as deleted.
+        :rtype: :class:`sickle.app.OAIIterator`
         """
         params = kwargs
         params.update({'verb': 'ListRecords'})
@@ -71,7 +78,10 @@ class Sickle(object):
     def ListIdentifiers(self, ignore_deleted=False, **kwargs):
         """Issue a ListIdentifiers request.
 
-        :rtype: :class:`~sickle.app.OAIResponse`
+        :param ignore_deleted: If set to :obj:`True`, the resulting 
+                              :class:`sickle.app.OAIIterator` will skip records
+                              flagged as deleted.
+        :rtype: :class:`sickle.app.OAIIterator`
         """
         params = kwargs
         params.update({'verb': 'ListIdentifiers'})
@@ -81,7 +91,7 @@ class Sickle(object):
     def ListSets(self, **kwargs):
         """Issue a ListSets request.
 
-        :rtype: :class:`~sickle.app.OAIResponse`
+        :rtype: :class:`sickle.app.OAIIterator`
         """
         params = kwargs
         params.update({'verb': 'ListSets'})
@@ -91,7 +101,7 @@ class Sickle(object):
     def Identify(self):
         """Issue an Identify request.
 
-        :rtype: :class:`~sickle.app.OAIResponse`
+        :rtype: :class:`sickle.models.Identify`
         """
         params = {'verb': 'Identify'}
         self.last_response = self.harvest(**params)
@@ -100,7 +110,7 @@ class Sickle(object):
     def GetRecord(self, **kwargs):
         """Issue a ListSets request.
 
-        :rtype: :class:`~sickle.app.OAIResponse`
+        :rtype: :class:`sickle.app.OAIResponse`
         """
         params = kwargs
         params.update({'verb': 'GetRecord'})
@@ -113,7 +123,7 @@ class Sickle(object):
     def ListMetadataFormats(self, **kwargs):
         """Issue a ListMetadataFormats request.
 
-        :rtype: :class:`~sickle.app.OAIResponse`
+        :rtype: :class:`sickle.app.OAIResponse`
         """
         params = kwargs
         params.update({'verb': 'ListMetadataFormats'})
@@ -153,17 +163,12 @@ class OAIIterator(object):
     """Iterator over OAI records/identifiers/sets transparently aggregated via
     OAI-PMH.
 
-    Can be used to conveniently iterate through the records of a repository::
-
-        >>> oai_response = sickle.ListRecords(metadataPrefix='oai_dc')
-        >>> records = oai_response.iter()
-        >>> records.next()
-        <Element {http://www.openarchives.org/OAI/2.0/}record at 0x1051b3b90>
-
+    Can be used to conveniently iterate through the records of a repository.
+    
     :param oai_response: The first OAI response.
-    :type oai_response: :class:`~sickle.app.OAIResponse`
+    :type oai_response: :class:`sickle.app.OAIResponse`
     :param sickle: The Sickle object that issued the first request.
-    :type sickle: :class:`~sickle.app.Sickle`
+    :type sickle: :class:`sickle.app.Sickle`
     :param ignore_deleted: Flag for whether to ignore deleted records.
     :type ignore_deleted: bool
     """
@@ -217,6 +222,7 @@ class OAIIterator(object):
         """Get the next response from the OAI server."""
         self.oai_response = self.sickle.harvest(verb=self.verb, 
             resumptionToken=self.resumption_token)
+        logger.debug('Getting next response (resumptionToken: %s' % self.resumption_token)
         self.resumption_token = self._get_resumption_token()
         self._items = self.oai_response.xml.iterfind(
             './/' + self.sickle.oai_namespace + self.element)
@@ -226,8 +232,9 @@ class OAIIterator(object):
         try:
             while True:
                 mapped = self.mapper(self._items.next())
-                if self.ignore_deleted and mapped.deleted:
-                    continue
+                if self.ignore_deleted:
+                    if mapped.deleted:
+                        continue
                 return mapped
         except StopIteration:
             if self.resumption_token is None:
