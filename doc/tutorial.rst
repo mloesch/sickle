@@ -59,7 +59,7 @@ the ``**`` operator::
 Iterative Harvesting
 ====================
 
-Sickle lets you convienently iterate through resumption batches
+Sickle lets you conveniently iterate through resumption batches
 without having to deal with ``resumptionTokens`` yourself::
 
     >>> records = sickle.ListRecords(metadataPrefix='oai_dc')
@@ -67,7 +67,8 @@ without having to deal with ``resumptionTokens`` yourself::
     <Record oai:eprints.rclis.org:4088>
 
 Note that this works with all requests that return more than one element.
-These are: ListRecords, ListIdentifiers, ListSets, and ListMetadataFormats.
+These are: :meth:`~sickle.app.Sickle.ListRecords`, :meth:`~sickle.app.Sickle.ListIdentifiers`, 
+:meth:`~sickle.app.Sickle.ListSets`, and :meth:`~sickle.app.Sickle.ListMetadataFormats`.
 
 Iterating through the headers returned by ``ListIdentifiers``::
 
@@ -80,3 +81,17 @@ Or through the sets returned by ``ListSets``::
     >>> sets = sickle.ListSets()
     >>> sets.next()
     <Set Status = In Press>
+
+
+Ignoring Deleted Records
+========================
+
+The :meth:`~sickle.app.Sickle.ListRecords` and :meth:`~sickle.app.Sickle.ListIdentifiers` 
+methods take an optional parameter :attr:`ignore_deleted`. If it is set to :obj:`True`,
+the returned :class:`~sickle.app.OAIIterator` will skip deleted records/headers::
+
+    >>> records = sickle.ListRecords(metadataPrefix='oai_dc', 
+                    ignore_deleted=True)
+
+
+

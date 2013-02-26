@@ -29,9 +29,39 @@ Iterating through OAI Items
 .. autoclass:: sickle.app.OAIIterator
     :members:
 
+    .. attribute oai_response
 
-OAI Entities
-============
+        The last response from the OAI server.
+
+    .. attribute:: sickle
+
+        The :class:`sickle.app.Sickle` instance used for making requests to the server.
+
+    .. attribute:: verb
+
+        The OAI verb used for making requests to the server.
+
+    .. attribute:: element
+
+        The name of the OAI item to iterate on (``record``, ``header``, ``set`` or
+        ``metadataFormat``).
+
+    .. attribute:: resumption_token
+
+        The content of the XML element ``resumptionToken`` from the last request.
+
+    .. attribute:: ignore_deleted
+
+        Flag for whether to skip records marked as deleted.
+
+
+
+Classes for OAI Items
+=====================
+
+The following classes represent OAI-specific items like records, headers, and sets.
+All items feature the attributes :attr:`raw` and :attr:`xml` which contain their 
+original XML representation as unicode and as parsed XML objects.
 
 
 Identify Object
@@ -43,9 +73,12 @@ the repository.
 
 .. autoclass:: sickle.models.Identify
     :members:
+    :inherited-members:
 
-    As the attributes of this class are auto-generated from the Identify XML elements, 
-    some of them may be missing for specific OAI interfaces.
+    .. note::
+
+        As the attributes of this class are auto-generated from the Identify XML elements, 
+        some of them may be missing for specific OAI interfaces.
 
     .. attribute:: adminEmail
 
@@ -150,6 +183,7 @@ Set Object
     .. attribute:: setSpec
 
         The identifier of this set used for querying.
+
 
 
 MetadataFormat Object
