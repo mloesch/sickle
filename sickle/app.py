@@ -8,15 +8,21 @@
     :copyright: Copright 2013 Mathias Loesch
 """
 
+import requests
+from lxml import etree
 
 from .models import Set, Record, Header, MetadataFormat, Identify
 import oaiexceptions
 
-import requests
-from lxml import etree
+
+import logging
+
+# Logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 OAI_NAMESPACE = '{http://www.openarchives.org/OAI/%s/}'
-XMLParser = etree.XMLParser(remove_blank_text=True)
+XMLParser = etree.XMLParser(remove_blank_text=True, recover=True)
 
 
 class Sickle(object):

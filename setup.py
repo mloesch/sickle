@@ -9,24 +9,14 @@
     Using Sickle
     ------------
 
-
         >>> from sickle import Sickle
         >>> client = Sickle('http://elis.da.ulcc.ac.uk/cgi/oai2')
-        >>> response = client.ListRecords(metadataPrefix='oai_dc')
+        >>> records = client.ListRecords(metadataPrefix='oai_dc')
 
-    Sickle provides different levels of abstraction for working with OAI 
-    responses::
+    Sickle provides a convenient way for iterating through all records of a repository:
 
-        >>> response.xml
-        <Element {http://www.openarchives.org/OAI/2.0/}OAI-PMH at 0x10469a8c0>
-        >>> response.raw
-        u'<?xml version=\'1.0\' encoding ...'
-
-    And a convenient way for iterating through all records of a repository:
-
-        >>> records = response.iter()
         >>> records.next()
-        <Element {http://www.openarchives.org/OAI/2.0/}record at 0x1051b3b90>
+        <Record ...>
 
 """
 
@@ -46,6 +36,7 @@ setup(
     platforms='any',
     install_requires=[
         'requests>=1.1.0',
+        'lxml',
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',
