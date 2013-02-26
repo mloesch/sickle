@@ -10,16 +10,16 @@ interfaces::
     >>> records = sickle.ListRecords(metadataPrefix='oai_dc')
 
 
-Most importantly, Sickle lets you convienently iterate through resumption batches
+Most importantly, Sickle lets you conveniently iterate through resumption batches
 without having to deal with ``resumptionTokens`` yourself::
     >>> records.next()
     <Record ...>
 
 
-Requirements
+Dependencies
 ============
 
-* requests (mandatory)
-* lxml (recommended for performance)
+* `requests <http://docs.python-requests.org/en/latest/>`_. 
+* `lxml <http://lxml.de/>`_. 
 
 
