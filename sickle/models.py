@@ -13,10 +13,15 @@ from .utils import get_namespace, xml_to_dict
 from lxml import etree
 
 
-class OAIEntity(object):
-    """docstring for OAIEntity"""
+class OAIItem(object):
+    """A generic OAI item.
+
+    :param xml: XML representation of the entity.
+    :param strip_ns: Flag for whether to remove the namespaces from the 
+                     element names in the dictionary representation.
+    """
     def __init__(self, xml, strip_ns=True):
-        super(OAIEntity, self).__init__()
+        super(OAIItem, self).__init__()
         self.xml = xml
         self._strip_ns = strip_ns
         self._oai_namespace = get_namespace(self.xml)
@@ -28,18 +33,30 @@ class OAIEntity(object):
         return etree.tounicode(self.xml)
 
     @property
+    def xml(self):
+        """The original parsed XML."""
+        return etree.tounicode(self.xml)
+
+    @property
     def raw(self):
-        """The server's response as unicode."""
+        """The original XML as unicode."""
         return etree.tounicode(self.xml)
  
 
-class Identify(OAIEntity):
-    """docstring for Identify"""
+class Identify(OAIItem):
+    """Represents an Identify container.
+
+    This object differs from the other entities in that is has to be created
+    from a :class:`sickle.app.OAIResponse` instead of an XML element.
+
+    :param identify_response: The response for an Identify request.
+    :type identify_response: :class:`sickle.app.OAIResponse`
+    """
     def __init__(self, identify_response):
         super(Identify, self).__init__(identify_response.xml, strip_ns=True)
         self.xml = self.xml.find('.//' + self._oai_namespace + 'Identify')
         self._identify_dict = xml_to_dict(self.xml, strip_ns=True)
-        for k,v in self._identify_dict.items():
+        for k, v in self._identify_dict.items():
             setattr(self, k.replace('-', '_'), v[0])
 
     def __repr__(self):
@@ -49,10 +66,13 @@ class Identify(OAIEntity):
         return self._identify_dict.iteritems()
 
 
-class Header(OAIEntity):
-    """Represents an OAI Header."""
-    def __init__(self, header_element, strip_ns=True):
-        super(Header, self).__init__(header_element, strip_ns=strip_ns)
+class Header(OAIItem):
+    """Represents an OAI Header.
+
+    :param header_element: The XML element 'header'.
+    """
+    def __init__(self, header_element):
+        super(Header, self).__init__(header_element, strip_ns=True)
         self.deleted = self.xml.attrib.get('status') == 'deleted'
         self.identifier = self.xml.find(
                             self._oai_namespace + 'identifier').text
@@ -68,28 +88,33 @@ class Header(OAIEntity):
             return '<Header %s>' % self.identifier
 
     def __iter__(self):
-        list_repr = [
+        return iter([
             ('identifier', self.identifier), 
             ('datestamp', self.datestamp),
             ('setSpecs', self.setSpecs)
-        ]
-        for k, v in list_repr:
-            yield k, v
+        ])
 
 
-class Record(OAIEntity):
-    """Represents an OAI record."""
+class Record(OAIItem):
+    """Represents an OAI record.
+
+    :param record_element: The XML element 'record'.
+    :param strip_ns: Flag for whether to remove the namespaces from the 
+                     element names.
+    """
     def __init__(self, record_element, strip_ns=True):
         super(Record, self).__init__(record_element, strip_ns=strip_ns)
-        
         self.header = Header(self.xml.find(
-            './/' + self._oai_namespace + 'header'), strip_ns=True)
+            './/' + self._oai_namespace + 'header'))
         self.deleted = self.header.deleted
         if not self.deleted:
+            # We want to get record/metadata/<container>/*
+            # <container> would be the element ``dc``
+            # in the ``oai_dc`` case.
             self.metadata = xml_to_dict(
                 self.xml.find(
                     './/' + self._oai_namespace + 'metadata'
-                ).getchildren()[0], strip_ns=True)
+                ).getchildren()[0], strip_ns=self._strip_ns)
 
     def __repr__(self):
         if self.header.deleted:
@@ -98,47 +123,41 @@ class Record(OAIEntity):
             return '<Record %s>' % self.header.identifier
 
     def __iter__(self):
-        for k, v in self.metadata.items():
-            yield (k, v)
+        return self.metadata.iteritems()
 
 
-class Set(OAIEntity):
-    """Represents an OAI set."""
-    def __init__(self, set_element, strip_ns=True):
-        super(Set, self).__init__(set_element, strip_ns=strip_ns)
-        self.deleted = False
-        self.setName = self.xml.find(
-                        self._oai_namespace + 'setName').text
-        self.setSpec = self.xml.find(
-                        self._oai_namespace + 'setSpec').text
+class Set(OAIItem):
+    """Represents an OAI set.
+
+    :param set_element: The XML element 'set'.
+    """
+    def __init__(self, set_element):
+        super(Set, self).__init__(set_element, strip_ns=True)
+        self._set_dict = xml_to_dict(self.xml, strip_ns=True)
+        for k, v in self._set_dict.items():
+            setattr(self, k.replace('-', '_'), v[0])
 
     def __repr__(self):
         return u'<Set %s>'.encode("utf8") % self.setName
 
     def __iter__(self):
-        for element in [(self.setName, self.setSpec)]:
-            yield element
+        return self._set_dict.iteritems()
 
 
+class MetadataFormat(OAIItem):
+    """Represents an OAI MetadataFormat.
 
-class MetadataFormat(OAIEntity):
-    """Represents an OAI MetadataFormat."""
-    def __init__(self, mdf_element, strip_ns=True):
-        super(MetadataFormat, self).__init__(mdf_element, strip_ns=strip_ns)
-        self.deleted = False
-        self.metadataPrefix = self.xml.find(
-                        self._oai_namespace + 'metadataPrefix').text
-        self.metadataNamespace = self.xml.find(
-                        self._oai_namespace + 'metadataNamespace').text
-        self.schema = self.xml.find(
-                        self._oai_namespace + 'schema').text
+    :param mdf_element: The XML element 'metadataFormat'.
+    """
+    def __init__(self, mdf_element):
+        super(MetadataFormat, self).__init__(mdf_element, strip_ns=True)
+        #: The prefix of this format.
+        self._mdf_dict = xml_to_dict(self.xml, strip_ns=True)
+        for k, v in self._mdf_dict.items():
+            setattr(self, k.replace('-', '_'), v[0])
 
     def __repr__(self):
         return u'<MetadataFormat %s>'.encode("utf8") % self.metadataPrefix
 
     def __iter__(self):
-        return iter([
-            ('metadataPrefix', self.metadataPrefix),
-            ('schema', self.schema),
-            ('namespace', self.metadataNamespace)
-        ])
+        return self._mdf_dict.iteritems()
