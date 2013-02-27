@@ -136,6 +136,8 @@ def test_GetRecord():
     assert record.header.identifier == oai_id
 
 
+# Test OAI-specific exceptions
+
 @raises(BadArgument)
 def test_badArgument():
     records = sickle.ListRecords(metadataPrefix='oai_dc', error='badArgument')

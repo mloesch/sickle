@@ -123,7 +123,7 @@ class Sickle(object):
     def ListMetadataFormats(self, **kwargs):
         """Issue a ListMetadataFormats request.
 
-        :rtype: :class:`sickle.app.OAIResponse`
+        :rtype: :class:`sickle.app.OAIIterator`
         """
         params = kwargs
         params.update({'verb': 'ListMetadataFormats'})
