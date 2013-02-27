@@ -131,7 +131,7 @@ def test_Identify():
 
 
 def test_GetRecord():
-    oai_id = 'oai:pub.ub.uni-bielefeld.de:1996652'
+    oai_id = 'oai:test.example.com:1996652'
     record = sickle.GetRecord(identifier=oai_id)
     assert record.header.identifier == oai_id
 
