@@ -34,6 +34,7 @@ setup(
     long_description=__doc__,
     packages=['sickle'],
     platforms='any',
+    setup_requires=['nose>=1.0'],
     install_requires=[
         'requests>=1.1.0',
         'lxml',
