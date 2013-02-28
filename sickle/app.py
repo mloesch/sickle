@@ -14,7 +14,6 @@ from lxml import etree
 from .models import Set, Record, Header, MetadataFormat, Identify
 import oaiexceptions
 
-
 import logging
 
 # Logging
@@ -23,6 +22,27 @@ logger.setLevel(logging.DEBUG)
 
 OAI_NAMESPACE = '{http://www.openarchives.org/OAI/%s/}'
 XMLParser = etree.XMLParser(remove_blank_text=True, recover=True)
+
+
+# Map OAI verbs to class representations
+DEFAULT_CLASS_MAPPING = {
+    'GetRecord': Record,
+    'ListRecords': Record,
+    'ListIdentifiers': Header,
+    'ListSets': Set,
+    'ListMetadataFormats': MetadataFormat,
+    'Identify': Identify,
+}
+
+# Map OAI verbs to the XML elements 
+VERBS_ELEMENTS = {
+    'GetRecord': 'record',
+    'ListRecords': 'record',
+    'ListIdentifiers': 'header',
+    'ListSets': 'set',
+    'ListMetadataFormats': 'metadataFormat',
+    'Identify': 'Identify',
+}
 
 
 class Sickle(object):
@@ -41,13 +61,20 @@ class Sickle(object):
     :type http_method: str
     :param protocol_version: The OAI protocol version.
     :type protocol_version: str
+    :param class_mapping: A dictionary that maps OAI verbs to classes representing OAI items.
+                          If not provided, :data:`sickle.app.DEFAULT_CLASS_MAPPING` is used.
+    :type class_mapping: dict
     """
-    def __init__(self, endpoint, http_method='GET', protocol_version='2.0'):
-        super(Sickle, self).__init__()
+    def __init__(self, endpoint, http_method='GET', protocol_version='2.0',
+        class_mapping=None):
         self.endpoint = endpoint
         self.http_method = http_method
         self.protocol_version = protocol_version
         self.oai_namespace = OAI_NAMESPACE % self.protocol_version
+        if class_mapping is None:
+            self.class_mapping = DEFAULT_CLASS_MAPPING
+        else:
+            self.class_mapping = class_mapping
         self.last_response = None
 
     def harvest(self, **kwargs):
@@ -110,7 +137,7 @@ class Sickle(object):
     def GetRecord(self, **kwargs):
         """Issue a ListSets request.
 
-        :rtype: :class:`sickle.app.OAIResponse`
+        :rtype: :class:`sickle.models.Record`
         """
         params = kwargs
         params.update({'verb': 'GetRecord'})
@@ -177,18 +204,9 @@ class OAIIterator(object):
         self.sickle = sickle
         self.verb = self.oai_response.params.get("verb")
         # Determine on what element to iterate (records, headers, or sets)
-        if self.verb == 'ListRecords' or self.verb == 'GetRecord':
-            self.element = 'record'
-            self.mapper = Record
-        elif self.verb == 'ListIdentifiers':
-            self.element = 'header'
-            self.mapper = Header
-        elif self.verb == 'ListSets':
-            self.element = 'set'
-            self.mapper = Set
-        elif self.verb == 'ListMetadataFormats':
-            self.element = 'metadataFormat'
-            self.mapper = MetadataFormat
+        self.element = VERBS_ELEMENTS[self.verb]
+        # Get the reflection class for the elements returned by this verb
+        self.mapper = self.sickle.class_mapping[self.verb]
         error = self.oai_response.xml.find('.//' + self.sickle.oai_namespace + 'error')
         if error is not None:
             code = error.attrib.get('code', 'UNKNOWN')
