@@ -83,6 +83,16 @@ Or through the sets returned by ``ListSets``::
     <Set Status = In Press>
 
 
+Getting a Single Record
+=======================
+
+OAI-PMH allows you to get a single record by using the ``GetRecord`` verb. And so does Sickle:
+
+    >>> sickle.GetRecord(identifier='oai:eprints.rclis.org:4088', 
+    ...            metadataPrefix='oai_dc')
+    <Record oai:eprints.rclis.org:4088>
+
+
 Ignoring Deleted Records
 ========================
 
@@ -91,7 +101,7 @@ methods take an optional parameter :attr:`ignore_deleted`. If it is set to :obj:
 the returned :class:`~sickle.app.OAIIterator` will skip deleted records/headers::
 
     >>> records = sickle.ListRecords(metadataPrefix='oai_dc', 
-                    ignore_deleted=True)
+    ...                ignore_deleted=True)
 
 
 

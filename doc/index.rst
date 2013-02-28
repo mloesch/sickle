@@ -12,6 +12,7 @@ Sickle: An OAI Client Library for Python
    intro
    tutorial
    api
-   testing
+   customizing
+   development
    credits
 
