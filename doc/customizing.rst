@@ -7,9 +7,9 @@ However, although it works fine with Dublin-Core-encoded metadata
 payloads, the :class:`sickle.models.Record` class implementation
 may not be compatible with all metadata formats out there.
 
-In this case you can write your own reflection classes by subclassing
+In this case you can write your own model classes by subclassing
 the default implementations. Then you need to implement the XML unpacking
-yourself by overriding the :meth:`unpack` method::
+yourself::
 
     from sickle.models import Record
 
