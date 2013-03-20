@@ -30,5 +30,8 @@ class NoSetHierarchy(Exception):
 class NoMetadataFormat(Exception):
     pass
 
+class NoRecordsMatch(Exception):
+    pass
+
 class OAIError(Exception):
     pass

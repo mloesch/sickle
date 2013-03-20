@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">
+    <responseDate>2013-02-27T09:55:11Z</responseDate>
+    <request verb="ListMetadataFormats">http://test.example.com/oai</request>
+    <ListMetadataFormats>
+        <metadataFormat>
+            <metadataPrefix>epicur</metadataPrefix>
+            <schema>http://www.persistent-identifier.de/xepicur/version1.0/xepicur.xsd</schema>
+            <metadataNamespace>urn:nbn:de:1111-2004033116</metadataNamespace>
+        </metadataFormat>
+        <metadataFormat>
+            <metadataPrefix>xMetaDissPlus</metadataPrefix>
+            <schema>http://files.dnb.de/standards/xmetadissplus/xmetadissplus.xsd</schema>
+            <metadataNamespace>http://www.d-nb.de/standards/xmetadissplus</metadataNamespace>
+        </metadataFormat>
+        <metadataFormat>
+            <metadataPrefix>oai_dc</metadataPrefix>
+            <schema>http://www.openarchives.org/OAI/2.0/oai_dc.xsd</schema>
+            <metadataNamespace>http://www.openarchives.org/OAI/2.0/oai_dc/</metadataNamespace>
+        </metadataFormat>
+        <metadataFormat>
+            <metadataPrefix>mods</metadataPrefix>
+            <schema>http://www.loc.gov/standards/mods/v3/mods-3-0.xsd</schema>
+            <metadataNamespace>http://www.loc.gov/mods/v3</metadataNamespace>
+        </metadataFormat>
+        <metadataFormat>
+            <metadataPrefix>swepub_mods</metadataPrefix>
+            <schema>http://www.loc.gov/standards/mods/v3/mods-3-2.xsd</schema>
+            <metadataNamespace>http://www.loc.gov/mods/v3</metadataNamespace>
+        </metadataFormat>
+    </ListMetadataFormats>
+</OAI-PMH>
