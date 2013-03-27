@@ -25,7 +25,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='Sickle',
-    version='0.2',
+    version='0.3',
     url='http://github.com/mloesch/sickle',
     license='BSD',
     author='Mathias Loesch',

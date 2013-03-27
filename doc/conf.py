@@ -19,7 +19,6 @@ import os
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('../'))
 
-from sickle import __version__ as version
 
 # -- General configuration -----------------------------------------------
 
@@ -52,7 +51,7 @@ copyright = u'2013, Mathias Loesch'
 # built documents.
 #
 # The short X.Y version.
-version = version
+version = '0.3'
 # The full version, including alpha/beta/rc tags.
 release = version
 

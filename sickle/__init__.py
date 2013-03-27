@@ -8,7 +8,7 @@
     :copyright: Copright 2013 Mathias Loesch
 """
 
-__version__ = '0.2'
+__version__ = '0.3'
 
 
 from .app import Sickle, OAIResponse
