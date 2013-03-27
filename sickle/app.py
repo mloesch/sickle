@@ -8,6 +8,7 @@
     :copyright: Copright 2013 Mathias Loesch
 """
 
+import time
 import requests
 from lxml import etree
 
