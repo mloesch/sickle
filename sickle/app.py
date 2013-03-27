@@ -34,7 +34,7 @@ DEFAULT_CLASS_MAPPING = {
     'Identify': Identify,
 }
 
-# Map OAI verbs to the XML elements 
+# Map OAI verbs to the XML elements
 VERBS_ELEMENTS = {
     'GetRecord': 'record',
     'ListRecords': 'record',
@@ -61,15 +61,27 @@ class Sickle(object):
     :type http_method: str
     :param protocol_version: The OAI protocol version.
     :type protocol_version: str
-    :param class_mapping: A dictionary that maps OAI verbs to classes representing OAI items.
-                          If not provided, :data:`sickle.app.DEFAULT_CLASS_MAPPING` is used.
+    :param max_retries: Number of retries if HTTP request fails.
+    :type max_retries: int
+    :param timeout: Timeout for HTTP requests.
+    :type timeout: int
+    :type protocol_version: str
+    :param class_mapping: A dictionary that maps OAI verbs to classes representing
+                          OAI items. If not provided,
+                          :data:`sickle.app.DEFAULT_CLASS_MAPPING` will be used.
     :type class_mapping: dict
     """
     def __init__(self, endpoint, http_method='GET', protocol_version='2.0',
-        class_mapping=None):
+        max_retries=5, timeout=None, class_mapping=None):
         self.endpoint = endpoint
+        if http_method not in ['GET', 'POST']:
+            raise ValueError, "Invalid HTTP method: %s! Must be GET or POST."
+        if protocol_version not in ['2.0', '1.0']:
+            raise ValueError, "Invalid protocol version: %s! Must be 1.0 or 2.0."
         self.http_method = http_method
         self.protocol_version = protocol_version
+        self.max_retries = max_retries
+        self.timeout = timeout
         self.oai_namespace = OAI_NAMESPACE % self.protocol_version
         if class_mapping is None:
             self.class_mapping = DEFAULT_CLASS_MAPPING
@@ -78,21 +90,33 @@ class Sickle(object):
         self.last_response = None
 
     def harvest(self, **kwargs):
-        """Make an HTTP request to the OAI server.
+        """Make HTTP requests to the OAI server.
 
+        :param kwargs: The OAI HTTP arguments.
         :rtype: :class:`sickle.app.OAIResponse`
         """
-        if self.http_method == 'GET':
-            return OAIResponse(requests.get(self.endpoint, params=kwargs), 
-                params=kwargs)
-        elif self.http_method == 'POST':
-            return OAIResponse(requests.post(self.endpoint, data=kwargs), 
-                params=kwargs)
+        for _ in xrange(self.max_retries):
+            if self.http_method == 'GET':
+                http_response = requests.get(self.endpoint, params=kwargs,
+                    timeout=self.timeout)
+            else:
+                http_response = requests.post(self.endpoint, data=kwargs,
+                    timeout=self.timeout)
+            if http_response.status_code == 503:
+                try:
+                    retry_after = int(http_response.headers.get('retry-after'))
+                except TypeError:
+                    retry_after = 20
+                print "Waiting %d seconds ... " % retry_after
+                time.sleep(retry_after)
+            else:
+                http_response.raise_for_status()
+                return OAIResponse(http_response, params=kwargs)
 
     def ListRecords(self, ignore_deleted=False, **kwargs):
         """Issue a ListRecords request.
 
-        :param ignore_deleted: If set to :obj:`True`, the resulting 
+        :param ignore_deleted: If set to :obj:`True`, the resulting
                               :class:`sickle.app.OAIIterator` will skip records
                               flagged as deleted.
         :rtype: :class:`sickle.app.OAIIterator`
@@ -105,7 +129,7 @@ class Sickle(object):
     def ListIdentifiers(self, ignore_deleted=False, **kwargs):
         """Issue a ListIdentifiers request.
 
-        :param ignore_deleted: If set to :obj:`True`, the resulting 
+        :param ignore_deleted: If set to :obj:`True`, the resulting
                               :class:`sickle.app.OAIIterator` will skip records
                               flagged as deleted.
         :rtype: :class:`sickle.app.OAIIterator`
@@ -142,8 +166,8 @@ class Sickle(object):
         params = kwargs
         params.update({'verb': 'GetRecord'})
         self.last_response = self.harvest(**params)
-        # GetRecord is treated as a special case of ListRecords: 
-        # by creating an OAIIterator and returning the first and 
+        # GetRecord is treated as a special case of ListRecords:
+        # by creating an OAIIterator and returning the first and
         # only record.
         return OAIIterator(self.last_response, self).next()
 
@@ -191,7 +215,7 @@ class OAIIterator(object):
     OAI-PMH.
 
     Can be used to conveniently iterate through the records of a repository.
-    
+
     :param oai_response: The first OAI response.
     :type oai_response: :class:`sickle.app.OAIResponse`
     :param sickle: The Sickle object that issued the first request.
@@ -238,7 +262,7 @@ class OAIIterator(object):
 
     def _next_response(self):
         """Get the next response from the OAI server."""
-        self.oai_response = self.sickle.harvest(verb=self.verb, 
+        self.oai_response = self.sickle.harvest(verb=self.verb,
             resumptionToken=self.resumption_token)
         logger.debug('Getting next response (resumptionToken: %s' % self.resumption_token)
         self.resumption_token = self._get_resumption_token()
