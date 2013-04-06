@@ -2,7 +2,61 @@
 Tutorial
 ========
 
-This section gives a brief overview of how to use Sickle .
+This section gives a brief overview on how to use Sickle for querying OAI
+interfaces.
+
+
+OAI-PMH Primer
+==============
+
+This section gives only a basic overview of
+`OAI-PMH <http://www.openarchives.org/OAI/openarchivesprotocol.html>`_.
+For more information, please refer to the protocol specification.
+
+OAI Verbs
+---------
+
+OAI-PMH  features six main API methods (so-called "OAI verbs") some of which can
+be combined with further arguments:
+
+``Identify``
+    Return information about the data provider. Arguments: None.
+``GetRecord``
+    Return a single record. Arguments:
+
+    * ``identifier`` (the unique identifier of the record, *required*)
+    * ``metadataPrefix`` (the prefix identifying the metadata format, *required*)
+``ListRecords``
+    Return the records in the data source in batches (possibly filtered by a timestamp or a ``set``).
+    Arguments:
+    * ``metadataPrefix`` (the prefix identifying the metadata format, *required*)
+    * ``from`` (the earliest timestamp of the records, *optional*)
+    * ``until`` (the latest timestamp of the records, *optional*)
+    * ``set`` (a set for selective harvesting, *optional*)
+    * ``resumptionToken`` (used for getting the next result batch if the number of records returned by the previous request exceeds the repositories batch size, *exclusive*)
+``ListIdentifiers``
+    *Like* ``ListRecords`` *but return only the record headers.*
+``ListSets``
+    Return the list of sets supported by this data source.
+    Arguments: None
+``ListMetadataFormats``
+    Return the list of metadata formats supported by this data source.
+    Arguments: None
+
+
+Metadata Formats
+----------------
+
+OAI interfaces may expose metadata records in multiple metadata formats. These formats
+are identified by so-called "metadata prefixes". For instance, the prefix ``oai_dc`` refers
+to the OAI-DC format, which by definition has to be exposed by every valid OAI interface.
+OAI-DC is based on the 15 metadata elements specified in the
+`Dublin Core Metadata Element Set <http://dublincore.org/documents/dces/>`_.
+
+.. note::
+
+    Sickle only supports the OAI-DC format out of the box. See section XXX for
+    how to extend Sickle for retrieving metadata in other formats.
 
 
 Initialize an OAI Interface
@@ -22,12 +76,12 @@ Issuing Requests
 ================
 
 Now you are set to issue some requests. Sickle provides methods for each of
-the six OAI verbs (ListRecords, GetRecord, Idenitfy, ListSets, ListMetadataFormats, 
+the six OAI verbs (ListRecords, GetRecord, Idenitfy, ListSets, ListMetadataFormats,
 ListIdentifiers). Start with a ListRecords request::
 
     >>> records = sickle.ListRecords(metadataPrefix='oai_dc')
 
-Note that all keyword arguments you provide to this function are passed to the OAI interface 
+Note that all keyword arguments you provide to this function are passed to the OAI interface
 as HTTP parameters. Therefore our example request results in ``verb=ListRecords&metadataPrefix=oai_dc``.
 Consequently, we can add additional parameters, like ``set`` for example::
 
@@ -46,9 +100,9 @@ will run into problems though, since ``from`` is a reserved word in Python::
                                                                   ^
     SyntaxError: invalid syntax
 
-Fortunately, you can circumvent this problem by using a dictionary together with 
+Fortunately, you can circumvent this problem by using a dictionary together with
 the ``**`` operator::
-    
+
     >>> records = sickle.ListRecords(
     ...     **{'metadataPrefix': 'oai_dc',
     ...       'from': '2012-12-12'
@@ -67,7 +121,7 @@ without having to deal with ``resumptionTokens`` yourself::
     <Record oai:eprints.rclis.org:4088>
 
 Note that this works with all requests that return more than one element.
-These are: :meth:`~sickle.app.Sickle.ListRecords`, :meth:`~sickle.app.Sickle.ListIdentifiers`, 
+These are: :meth:`~sickle.app.Sickle.ListRecords`, :meth:`~sickle.app.Sickle.ListIdentifiers`,
 :meth:`~sickle.app.Sickle.ListSets`, and :meth:`~sickle.app.Sickle.ListMetadataFormats`.
 
 Iterating through the headers returned by ``ListIdentifiers``::
@@ -77,7 +131,7 @@ Iterating through the headers returned by ``ListIdentifiers``::
     <Header oai:eprints.rclis.org:4088>
 
 Or through the sets returned by ``ListSets``::
-    
+
     >>> sets = sickle.ListSets()
     >>> sets.next()
     <Set Status = In Press>
@@ -88,7 +142,7 @@ Getting a Single Record
 
 OAI-PMH allows you to get a single record by using the ``GetRecord`` verb. And so does Sickle:
 
-    >>> sickle.GetRecord(identifier='oai:eprints.rclis.org:4088', 
+    >>> sickle.GetRecord(identifier='oai:eprints.rclis.org:4088',
     ...            metadataPrefix='oai_dc')
     <Record oai:eprints.rclis.org:4088>
 
@@ -96,11 +150,11 @@ OAI-PMH allows you to get a single record by using the ``GetRecord`` verb. And s
 Ignoring Deleted Records
 ========================
 
-The :meth:`~sickle.app.Sickle.ListRecords` and :meth:`~sickle.app.Sickle.ListIdentifiers` 
+The :meth:`~sickle.app.Sickle.ListRecords` and :meth:`~sickle.app.Sickle.ListIdentifiers`
 methods take an optional parameter :attr:`ignore_deleted`. If it is set to :obj:`True`,
 the returned :class:`~sickle.app.OAIIterator` will skip deleted records/headers::
 
-    >>> records = sickle.ListRecords(metadataPrefix='oai_dc', 
+    >>> records = sickle.ListRecords(metadataPrefix='oai_dc',
     ...                ignore_deleted=True)
 
 
