@@ -9,9 +9,9 @@ interfaces.
 OAI-PMH Primer
 ==============
 
-The API implements the `Open Archives Protocol for Metadata Harvesting (OAI-PMH) <http://openarchives.org>`_.
-This section gives only a basic overview of OAI-PMH. For more information, please refer to the protocol
-specification.
+This section gives a basic overview of
+the `Open Archives Protocol for Metadata Harvesting (OAI-PMH) <http://openarchives.org>`_.
+For more detailed information, please refer to the protocol specification.
 
 Glossary of Important OAI-PMH Concepts
 --------------------------------------
