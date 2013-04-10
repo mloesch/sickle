@@ -9,38 +9,59 @@ interfaces.
 OAI-PMH Primer
 ==============
 
-This section gives only a basic overview of
-`OAI-PMH <http://www.openarchives.org/OAI/openarchivesprotocol.html>`_.
-For more information, please refer to the protocol specification.
+The API implements the `Open Archives Protocol for Metadata Harvesting (OAI-PMH) <http://openarchives.org>`_.
+This section gives only a basic overview of OAI-PMH. For more information, please refer to the protocol
+specification.
+
+Glossary of Important OAI-PMH Concepts
+--------------------------------------
+
+**Repository**
+    A *repository* is a server-side application that exposes metadata via OAI-PMH.
+**Harvester**
+    OAI-PMH client applications like Sickle are called *harvesters*.
+**record**
+    A *record* is the XML-encoded container for the metadata of a single publication item.
+    It consists of a *header* and a *metadata* section.
+**header**
+    The record *header* contains a unique identifier and a datestamp.
+**metadata**
+    The record *metadata* contains the publication metadata in a defined
+    metadata format.
+**set**
+    A structure for grouping records for selective harvesting.
+**harvesting**
+    The process of requesting records from the repository by the harvester.
 
 OAI Verbs
 ---------
 
-OAI-PMH  features six main API methods (so-called "OAI verbs") some of which can
-be combined with further arguments:
+OAI-PMH  features six main API methods (so-called "OAI verbs") that can be issued by
+harvesters. Some verbs can be combined with further arguments:
 
 ``Identify``
-    Return information about the data provider. Arguments: None.
+    Returns information about the repository. Arguments: None.
 ``GetRecord``
-    Return a single record. Arguments:
+    Returns a single record. Arguments:
 
     * ``identifier`` (the unique identifier of the record, *required*)
     * ``metadataPrefix`` (the prefix identifying the metadata format, *required*)
 ``ListRecords``
-    Return the records in the data source in batches (possibly filtered by a timestamp or a ``set``).
+    Returns the records in the repository in batches (possibly filtered by a timestamp or a ``set``).
     Arguments:
+
     * ``metadataPrefix`` (the prefix identifying the metadata format, *required*)
     * ``from`` (the earliest timestamp of the records, *optional*)
     * ``until`` (the latest timestamp of the records, *optional*)
     * ``set`` (a set for selective harvesting, *optional*)
-    * ``resumptionToken`` (used for getting the next result batch if the number of records returned by the previous request exceeds the repositories batch size, *exclusive*)
+    * ``resumptionToken`` (used for getting the next result batch if the number of records returned by the previous request exceeds the repository's maximum batch size, *exclusive*)
 ``ListIdentifiers``
-    *Like* ``ListRecords`` *but return only the record headers.*
+    *Like* ``ListRecords`` *but returns only the record headers.*
 ``ListSets``
-    Return the list of sets supported by this data source.
+    Returns the list of sets supported by this repository.
     Arguments: None
 ``ListMetadataFormats``
-    Return the list of metadata formats supported by this data source.
+    Returns the list of metadata formats supported by this repository.
     Arguments: None
 
 
