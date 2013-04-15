@@ -71,6 +71,9 @@ class Sickle(object):
                           OAI items. If not provided,
                           :data:`sickle.app.DEFAULT_CLASS_MAPPING` will be used.
     :type class_mapping: dict
+    :param auth: An optional tuple ('username', 'password')
+                 for accessing protected OAI interfaces.
+    :type auth: tuple
     """
     def __init__(self, endpoint, http_method='GET', protocol_version='2.0',
         max_retries=5, timeout=None, class_mapping=None, auth=None):
