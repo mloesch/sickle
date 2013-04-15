@@ -175,8 +175,7 @@ The :meth:`~sickle.app.Sickle.ListRecords` and :meth:`~sickle.app.Sickle.ListIde
 methods take an optional parameter :attr:`ignore_deleted`. If it is set to :obj:`True`,
 the returned :class:`~sickle.app.OAIIterator` will skip deleted records/headers::
 
-    >>> records = sickle.ListRecords(metadataPrefix='oai_dc',
-    ...                ignore_deleted=True)
+    >>> records = sickle.ListRecords(metadataPrefix='oai_dc', ignore_deleted=True)
 
 
 
