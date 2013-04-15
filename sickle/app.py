@@ -73,7 +73,7 @@ class Sickle(object):
     :type class_mapping: dict
     """
     def __init__(self, endpoint, http_method='GET', protocol_version='2.0',
-        max_retries=5, timeout=None, class_mapping=None):
+        max_retries=5, timeout=None, class_mapping=None, auth=None):
         self.endpoint = endpoint
         if http_method not in ['GET', 'POST']:
             raise ValueError, "Invalid HTTP method: %s! Must be GET or POST."
@@ -88,6 +88,7 @@ class Sickle(object):
             self.class_mapping = DEFAULT_CLASS_MAPPING
         else:
             self.class_mapping = class_mapping
+        self.auth = auth
         self.last_response = None
 
     def harvest(self, **kwargs):
@@ -99,10 +100,10 @@ class Sickle(object):
         for _ in xrange(self.max_retries):
             if self.http_method == 'GET':
                 http_response = requests.get(self.endpoint, params=kwargs,
-                    timeout=self.timeout)
+                    timeout=self.timeout, auth=self.auth)
             else:
                 http_response = requests.post(self.endpoint, data=kwargs,
-                    timeout=self.timeout)
+                    timeout=self.timeout, auth=self.auth)
             if http_response.status_code == 503:
                 try:
                     retry_after = int(http_response.headers.get('retry-after'))
