@@ -14,10 +14,16 @@ without having to deal with ``resumptionTokens`` yourself::
     <Record ...>
 
 
-Dependencies
+Installation
 ============
 
-* `requests <http://docs.python-requests.org/en/latest/>`_. 
-* `lxml <http://lxml.de/>`_. 
+::
+
+    pip install sickle
+
+Dependencies:
+
+* `requests <http://docs.python-requests.org/en/latest/>`_
+* `lxml <http://lxml.de/>`_
 
 
