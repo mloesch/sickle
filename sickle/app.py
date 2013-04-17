@@ -76,12 +76,13 @@ class Sickle(object):
     :type auth: tuple
     """
     def __init__(self, endpoint, http_method='GET', protocol_version='2.0',
-        max_retries=5, timeout=None, class_mapping=None, auth=None):
+                 max_retries=5, timeout=None, class_mapping=None, auth=None):
         self.endpoint = endpoint
         if http_method not in ['GET', 'POST']:
-            raise ValueError, "Invalid HTTP method: %s! Must be GET or POST."
+            raise ValueError("Invalid HTTP method: %s! Must be GET or POST.")
         if protocol_version not in ['2.0', '1.0']:
-            raise ValueError, "Invalid protocol version: %s! Must be 1.0 or 2.0."
+            raise ValueError(
+                "Invalid protocol version: %s! Must be 1.0 or 2.0.")
         self.http_method = http_method
         self.protocol_version = protocol_version
         self.max_retries = max_retries
@@ -103,10 +104,10 @@ class Sickle(object):
         for _ in xrange(self.max_retries):
             if self.http_method == 'GET':
                 http_response = requests.get(self.endpoint, params=kwargs,
-                    timeout=self.timeout, auth=self.auth)
+                                             timeout=self.timeout, auth=self.auth)
             else:
                 http_response = requests.post(self.endpoint, data=kwargs,
-                    timeout=self.timeout, auth=self.auth)
+                                              timeout=self.timeout, auth=self.auth)
             if http_response.status_code == 503:
                 try:
                     retry_after = int(http_response.headers.get('retry-after'))
@@ -236,14 +237,16 @@ class OAIIterator(object):
         self.element = VERBS_ELEMENTS[self.verb]
         # Get the reflection class for the elements returned by this verb
         self.mapper = self.sickle.class_mapping[self.verb]
-        error = self.oai_response.xml.find('.//' + self.sickle.oai_namespace + 'error')
+        error = self.oai_response.xml.find(
+            './/' + self.sickle.oai_namespace + 'error')
         if error is not None:
             code = error.attrib.get('code', 'UNKNOWN')
             description = error.text or ''
             try:
-                raise getattr(oaiexceptions, code[0].upper() + code[1:]), description
+                raise getattr(
+                    oaiexceptions, code[0].upper() + code[1:])(description)
             except AttributeError:
-                raise oaiexceptions.OAIError, description
+                raise oaiexceptions.OAIError(description)
 
         self._items = self.oai_response.xml.iterfind(
             './/' + self.sickle.oai_namespace + self.element)
@@ -268,8 +271,9 @@ class OAIIterator(object):
     def _next_response(self):
         """Get the next response from the OAI server."""
         self.oai_response = self.sickle.harvest(verb=self.verb,
-            resumptionToken=self.resumption_token)
-        logger.debug('Getting next response (resumptionToken: %s' % self.resumption_token)
+                                                resumptionToken=self.resumption_token)
+        logger.debug('Getting next response (resumptionToken: %s' %
+                     self.resumption_token)
         self.resumption_token = self._get_resumption_token()
         self._items = self.oai_response.xml.iterfind(
             './/' + self.sickle.oai_namespace + self.element)

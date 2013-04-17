@@ -25,7 +25,7 @@ logger.addHandler(handler)
 this_dir, this_filename = os.path.split(__file__)
 
 # Create a Sickle OAI-PMH client. It doesn't need a resolvable
-# OAI endpoint for testing since we are reading the responses 
+# OAI endpoint for testing since we are reading the responses
 # from files.
 sickle = Sickle('fake_url')
 
@@ -58,7 +58,7 @@ def fake_harvest(**kwargs):
 
         fake_harvest(verb='ListRecords', error='badArgument')
 
-    :param kwargs: OAI arguments that would normally be passed to 
+    :param kwargs: OAI arguments that would normally be passed to
                    :meth:`sickle.app.Sickle.harvest`.
     :rtype: :class:`sickle.app.OAIResponse`.
     """

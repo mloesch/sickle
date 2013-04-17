@@ -46,6 +46,6 @@ setup(
         'Programming Language :: Python :: 2.7',
         'Topic :: Text Processing :: Markup :: XML',
     ],
-    keywords = "oai oai-pmh",
+    keywords="oai oai-pmh",
     zip_safe=False,
 )
