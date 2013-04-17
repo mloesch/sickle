@@ -1,25 +1,5 @@
 # coding: utf-8
 
-"""
-    Sickle
-    ~~~~~~
-
-    Sickle is a lightweight OAI client library for Python.
-
-    Using Sickle
-    ------------
-
-        >>> from sickle import Sickle
-        >>> client = Sickle('http://elis.da.ulcc.ac.uk/cgi/oai2')
-        >>> records = client.ListRecords(metadataPrefix='oai_dc')
-
-    Sickle provides a convenient way for iterating through all records of a repository:
-
-        >>> records.next()
-        <Record ...>
-
-"""
-
 from setuptools import setup, find_packages
 
 
@@ -31,7 +11,7 @@ setup(
     author='Mathias Loesch',
     author_email='mathias.loesch@uni-bielefeld.de',
     description='A lightweight OAI client library for Python',
-    long_description=__doc__,
+    long_description=open('README.rst').read(),
     packages=['sickle'],
     platforms='any',
     setup_requires=['nose>=1.0'],
