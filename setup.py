@@ -25,7 +25,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='Sickle',
-    version='0.2',
+    version='0.3',
     url='http://github.com/mloesch/sickle',
     license='BSD',
     author='Mathias Loesch',
@@ -34,6 +34,7 @@ setup(
     long_description=__doc__,
     packages=['sickle'],
     platforms='any',
+    setup_requires=['nose>=1.0'],
     install_requires=[
         'requests>=1.1.0',
         'lxml',
@@ -45,5 +46,6 @@ setup(
         'Programming Language :: Python :: 2.7',
         'Topic :: Text Processing :: Markup :: XML',
     ],
+    keywords="oai oai-pmh",
     zip_safe=False,
 )

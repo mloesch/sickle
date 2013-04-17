@@ -7,4 +7,3 @@
 
     :copyright: Copright 2013 Mathias Loesch
 """
-

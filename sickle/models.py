@@ -11,21 +11,22 @@
 from lxml import etree
 from .utils import get_namespace, xml_to_dict
 
+
 class OAIItem(object):
     """A generic OAI item.
 
     :param xml: XML representation of the entity.
-    :param strip_ns: Flag for whether to remove the namespaces from the 
+    :param strip_ns: Flag for whether to remove the namespaces from the
                      element names in the dictionary representation.
     """
     def __init__(self, xml, strip_ns=True):
         super(OAIItem, self).__init__()
-        
+
         #: The original parsed XML
         self.xml = xml
         self._strip_ns = strip_ns
         self._oai_namespace = get_namespace(self.xml)
-    
+
     def __str__(self):
         return etree.tounicode(self.xml).encode("utf8")
 
@@ -36,7 +37,7 @@ class OAIItem(object):
     def raw(self):
         """The original XML as unicode."""
         return etree.tounicode(self.xml)
- 
+
 
 class Identify(OAIItem):
     """Represents an Identify container.
@@ -70,12 +71,12 @@ class Header(OAIItem):
         super(Header, self).__init__(header_element, strip_ns=True)
         self.deleted = self.xml.attrib.get('status') == 'deleted'
         self.identifier = self.xml.find(
-                            self._oai_namespace + 'identifier').text
+            self._oai_namespace + 'identifier').text
         self.datestamp = self.xml.find(
-                            self._oai_namespace + 'datestamp').text
-        self.setSpecs = [setSpec.text for setSpec in 
-                self.xml.findall(self._oai_namespace + 'setSpec')]
-        
+            self._oai_namespace + 'datestamp').text
+        self.setSpecs = [setSpec.text for setSpec in
+                         self.xml.findall(self._oai_namespace + 'setSpec')]
+
     def __repr__(self):
         if self.deleted:
             return '<Header %s [deleted]>' % self.identifier
@@ -84,7 +85,7 @@ class Header(OAIItem):
 
     def __iter__(self):
         return iter([
-            ('identifier', self.identifier), 
+            ('identifier', self.identifier),
             ('datestamp', self.datestamp),
             ('setSpecs', self.setSpecs)
         ])
@@ -94,7 +95,7 @@ class Record(OAIItem):
     """Represents an OAI record.
 
     :param record_element: The XML element 'record'.
-    :param strip_ns: Flag for whether to remove the namespaces from the 
+    :param strip_ns: Flag for whether to remove the namespaces from the
                      element names.
     """
     def __init__(self, record_element, strip_ns=True):

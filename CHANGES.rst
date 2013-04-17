@@ -1,6 +1,15 @@
 Sickle Changes
 ==============
 
+Version 0.3
+-----------
+
+- added support for protected OAI interfaces (basic auth)
+- made class mapping for OAI elements configurable
+- added options for HTTP timeout and max retries
+- added handling of HTTP 503 responses
+
+
 Version 0.2
 -----------
 
