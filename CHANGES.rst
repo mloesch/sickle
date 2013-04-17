@@ -1,5 +1,5 @@
-Sickle Changes
-==============
+Changelog
+=========
 
 Version 0.3
 -----------
