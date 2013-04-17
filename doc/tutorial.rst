@@ -68,10 +68,11 @@ harvesters. Some verbs can be combined with further arguments:
 Metadata Formats
 ----------------
 
-OAI interfaces may expose metadata records in multiple metadata formats. These formats
-are identified by so-called "metadata prefixes". For instance, the prefix ``oai_dc`` refers
-to the OAI-DC format, which by definition has to be exposed by every valid OAI interface.
-OAI-DC is based on the 15 metadata elements specified in the
+OAI interfaces may expose metadata records in multiple metadata formats. These
+formats are identified by so-called "metadata prefixes". For instance, the
+prefix ``oai_dc`` refers to the OAI-DC format, which by definition has to be
+exposed by every valid OAI interface. OAI-DC is based on the 15 metadata
+elements specified in the
 `Dublin Core Metadata Element Set <http://dublincore.org/documents/dces/>`_.
 
 .. note::
@@ -176,6 +177,3 @@ methods take an optional parameter :attr:`ignore_deleted`. If it is set to :obj:
 the returned :class:`~sickle.app.OAIIterator` will skip deleted records/headers::
 
     >>> records = sickle.ListRecords(metadataPrefix='oai_dc', ignore_deleted=True)
-
-
-
