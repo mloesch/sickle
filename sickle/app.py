@@ -12,7 +12,7 @@ import time
 import requests
 from lxml import etree
 
-from .models import Set, Record, Header, MetadataFormat, Identify
+from .models import Set, Record, Header, MetadataFormat, Identify, ResumptionToken
 import oaiexceptions
 
 import logging
@@ -261,19 +261,22 @@ class OAIIterator(object):
 
     def _get_resumption_token(self):
         """Extract and store the resumptionToken from the last response."""
-        resumption_token = self.oai_response.xml.find(
+        resumption_token_element = self.oai_response.xml.find(
             './/' + self.sickle.oai_namespace + 'resumptionToken')
-        if resumption_token is None:
+        if resumption_token_element is None:
             return None
-        else:
-            return resumption_token.text
+        token = resumption_token_element.text
+        cursor = resumption_token_element.attrib.get('cursor', None)
+        complete_list_size = resumption_token_element.attrib.get('completeListSize', None)
+        resumption_token = ResumptionToken(token=token, cursor=cursor, complete_list_size=complete_list_size)
+        return resumption_token
 
     def _next_response(self):
         """Get the next response from the OAI server."""
         self.oai_response = self.sickle.harvest(verb=self.verb,
-                                                resumptionToken=self.resumption_token)
+                                                resumptionToken=self.resumption_token.token)
         logger.debug('Getting next response (resumptionToken: %s' %
-                     self.resumption_token)
+                     self.resumption_token.token)
         self.resumption_token = self._get_resumption_token()
         self._items = self.oai_response.xml.iterfind(
             './/' + self.sickle.oai_namespace + self.element)

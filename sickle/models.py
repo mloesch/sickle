@@ -12,6 +12,17 @@ from lxml import etree
 from .utils import get_namespace, xml_to_dict
 
 
+class ResumptionToken(object):
+    """Represents a resumption token."""
+    def __init__(self, token, cursor, complete_list_size):
+        self.token = token
+        self.cursor = cursor
+        self.complete_list_size = complete_list_size
+
+    def __repr__(self):
+        return '<ResumptionToken %s>' % self.token
+
+
 class OAIItem(object):
     """A generic OAI item.
 
