@@ -198,19 +198,19 @@ class OAIResponse(object):
     :param params: The OAI parameters for the request.
     :type params: dict
     """
-    def __init__(self, response, params):
+    def __init__(self, http_response, params):
         self.params = params
-        self.response = response
+        self.http_response = http_response
 
     @property
     def raw(self):
         """The server's response as unicode."""
-        return self.response.text
+        return self.http_response.text
 
     @property
     def xml(self):
         """The server's response as parsed XML."""
-        return etree.XML(self.response.text.encode("utf8"), parser=XMLParser)
+        return etree.XML(self.http_response.text.encode("utf8"), parser=XMLParser)
 
     def __repr__(self):
         return '<OAIResponse %s>' % self.params.get('verb')
