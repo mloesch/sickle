@@ -13,8 +13,9 @@ from .utils import get_namespace, xml_to_dict
 
 
 class ResumptionToken(object):
+
     """Represents a resumption token."""
-    def __init__(self, token, cursor, complete_list_size):
+    def __init__(self, token='', cursor='', complete_list_size='', expiration_date=''):
         self.token = token
         self.cursor = cursor
         self.complete_list_size = complete_list_size
@@ -24,6 +25,7 @@ class ResumptionToken(object):
 
 
 class OAIItem(object):
+
     """A generic OAI item.
 
     :param xml: XML representation of the entity.
@@ -51,6 +53,7 @@ class OAIItem(object):
 
 
 class Identify(OAIItem):
+
     """Represents an Identify container.
 
     This object differs from the other entities in that is has to be created
@@ -74,6 +77,7 @@ class Identify(OAIItem):
 
 
 class Header(OAIItem):
+
     """Represents an OAI Header.
 
     :param header_element: The XML element 'header'.
@@ -103,6 +107,7 @@ class Header(OAIItem):
 
 
 class Record(OAIItem):
+
     """Represents an OAI record.
 
     :param record_element: The XML element 'record'.
@@ -134,6 +139,7 @@ class Record(OAIItem):
 
 
 class Set(OAIItem):
+
     """Represents an OAI set.
 
     :param set_element: The XML element 'set'.
@@ -152,6 +158,7 @@ class Set(OAIItem):
 
 
 class MetadataFormat(OAIItem):
+
     """Represents an OAI MetadataFormat.
 
     :param mdf_element: The XML element 'metadataFormat'.

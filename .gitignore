@@ -3,3 +3,4 @@ doc/_build
 build/
 dist/
 sickle.egg-info/
+coverage.xml

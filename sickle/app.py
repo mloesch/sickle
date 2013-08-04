@@ -12,6 +12,7 @@ import time
 import requests
 from lxml import etree
 
+
 from .models import Set, Record, Header, MetadataFormat, Identify, ResumptionToken
 import oaiexceptions
 
@@ -47,6 +48,7 @@ VERBS_ELEMENTS = {
 
 
 class Sickle(object):
+
     """Client for harvesting OAI interfaces.
 
     Use it like this::
@@ -88,14 +90,11 @@ class Sickle(object):
         self.max_retries = max_retries
         self.timeout = timeout
         self.oai_namespace = OAI_NAMESPACE % self.protocol_version
-        if class_mapping is None:
-            self.class_mapping = DEFAULT_CLASS_MAPPING
-        else:
-            self.class_mapping = class_mapping
+        self.class_mapping = class_mapping or DEFAULT_CLASS_MAPPING
         self.auth = auth
         self.last_response = None
 
-    def harvest(self, **kwargs):
+    def harvest(self, **kwargs):  # pragma: no cover
         """Make HTTP requests to the OAI server.
 
         :param kwargs: The OAI HTTP arguments.
@@ -113,7 +112,8 @@ class Sickle(object):
                     retry_after = int(http_response.headers.get('retry-after'))
                 except TypeError:
                     retry_after = 20
-                print "Waiting %d seconds ... " % retry_after
+                logger.info(
+                    "Status code 503. Waiting %d seconds ... " % retry_after)
                 time.sleep(retry_after)
             else:
                 http_response.raise_for_status()
@@ -189,6 +189,7 @@ class Sickle(object):
 
 
 class OAIResponse(object):
+
     """A response from an OAI server.
 
     Provides access to the returned data on different abstraction
@@ -217,6 +218,7 @@ class OAIResponse(object):
 
 
 class OAIIterator(object):
+
     """Iterator over OAI records/identifiers/sets transparently aggregated via
     OAI-PMH.
 
@@ -267,8 +269,15 @@ class OAIIterator(object):
             return None
         token = resumption_token_element.text
         cursor = resumption_token_element.attrib.get('cursor', None)
-        complete_list_size = resumption_token_element.attrib.get('completeListSize', None)
-        resumption_token = ResumptionToken(token=token, cursor=cursor, complete_list_size=complete_list_size)
+        complete_list_size = resumption_token_element.attrib.get(
+            'completeListSize', None)
+        expiration_date = resumption_token_element.attrib.get(
+            'expirationDate', None)
+        resumption_token = ResumptionToken(
+            token=token, cursor=cursor,
+            complete_list_size=complete_list_size,
+            expiration_date=expiration_date
+        )
         return resumption_token
 
     def _next_response(self):
@@ -298,5 +307,5 @@ class OAIIterator(object):
                 while True:
                     mapped = self.mapper(self._items.next())
                     if self.ignore_deleted and mapped.deleted:
-                        continue
+                        continue # pragma: no cover
                     return mapped
