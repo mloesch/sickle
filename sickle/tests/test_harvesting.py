@@ -71,7 +71,8 @@ def test_OAIResponse():
 @mock.patch('sickle.app.Sickle.harvest', fake_harvest)
 def test_broken_XML():
     sickle = Sickle('fake_url')
-    response = sickle.harvest(verb='ListRecords', resumptionToken='ListRecordsBroken.xml')
+    response = sickle.harvest(
+        verb='ListRecords', resumptionToken='ListRecordsBroken.xml')
     response.xml
     response.raw
 
@@ -205,10 +206,10 @@ def test_noRecordsMatch():
     records = sickle.ListRecords(
         metadataPrefix='oai_dc', error='noRecordsMatch')
 
+
 @mock.patch('sickle.app.Sickle.harvest', fake_harvest)
 @raises(OAIError)
 def test_undefined_OAI_error_XML():
     sickle = Sickle('fake_url')
     records = sickle.ListRecords(
         metadataPrefix='oai_dc', error='undefinedError')
-

@@ -31,6 +31,7 @@ def xml_to_dict(tree, paths=['.//'], nsmap={}, strip_ns=False):
     for path in paths:
         elements = tree.findall(path, nsmap)
         for element in elements:
-            tag = re.sub(r'\{.*\}', '', element.tag) if strip_ns else element.tag
+            tag = re.sub(
+                r'\{.*\}', '', element.tag) if strip_ns else element.tag
             fields[tag].append(element.text)
     return dict(fields)
