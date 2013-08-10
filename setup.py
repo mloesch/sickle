@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='Sickle',
-    version='0.3',
+    version='0.4',
     url='http://github.com/mloesch/sickle',
     license='BSD',
     author='Mathias Loesch',
@@ -18,7 +18,7 @@ setup(
     setup_requires=['nose>=1.0'],
     install_requires=[
         'requests>=1.1.0',
-        'lxml',
+        'lxml>=3.2.3',
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',
