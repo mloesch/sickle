@@ -75,10 +75,12 @@ exposed by every valid OAI interface. OAI-DC is based on the 15 metadata
 elements specified in the
 `Dublin Core Metadata Element Set <http://dublincore.org/documents/dces/>`_.
 
+
 .. note::
 
-    Sickle only supports the OAI-DC format out of the box. See section XXX for
-    how to extend Sickle for retrieving metadata in other formats.
+    Sickle only supports the OAI-DC format out of the box. See the section
+    on :ref:`customizing <customizing>` for information on how to extend
+    Sickle for retrieving metadata in other formats.
 
 
 Initialize an OAI Interface

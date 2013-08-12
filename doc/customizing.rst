@@ -1,3 +1,5 @@
+.. _customizing:
+
 ==================================
 Harvesting Custom Metadata Formats
 ==================================
