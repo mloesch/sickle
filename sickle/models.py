@@ -1,7 +1,7 @@
 # coding: utf-8
 """
-    models
-    ~~~~~~
+    sickle.models
+    ~~~~~~~~~~~~~
 
     Collects classes for OAI-specific entities.
 

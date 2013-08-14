@@ -1,7 +1,7 @@
 # coding: utf-8
 """
-    exceptions
-    ~~~~~~~~~~
+    sickle.oaiexceptions
+    ~~~~~~~~~~~~~~~~~~~~
 
     OAI errors.
 

@@ -1,7 +1,7 @@
 # coding: utf-8
 """
-    Sickle
-    ~~~~~~
+    sickle.app
+    ~~~~~~~~~~
 
     An OAI-PMH client.
 
@@ -13,8 +13,9 @@ import requests
 from lxml import etree
 
 
-from .models import Set, Record, Header, MetadataFormat, Identify, ResumptionToken
-import oaiexceptions
+from .models import (Set, Record, Header, MetadataFormat,
+    Identify, ResumptionToken)
+from sickle import oaiexceptions
 
 import logging
 

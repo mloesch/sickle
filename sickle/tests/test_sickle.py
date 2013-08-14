@@ -1,5 +1,8 @@
 # coding: utf-8
-
+"""
+    sickle.tests.test_sickle
+    ~~~~~~~~~~~~~~~~~~~~~~~~
+"""
 import os
 
 from sickle import Sickle
