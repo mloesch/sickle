@@ -1,6 +1,13 @@
 Sickle: An OAI Client Library for Python
 ========================================
 
+.. image:: https://pypip.in/v/Sickle/badge.png
+    :target: https://crate.io/packages/Sickle/
+    :alt: Latest PyPI version
+
+.. image:: https://pypip.in/d/Sickle/badge.png
+    :target: https://crate.io/packages/Sickle/
+    :alt: Number of PyPI downloads
 
 Sickle is lightweight `OAI-PMH <http://www.openarchives.org/OAI/openarchivesprotocol.html>`_
 client library written in Python.  It has been designed for conveniently retrieving
