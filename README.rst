@@ -1,5 +1,5 @@
-Sickle: An OAI Client Library for Python
-========================================
+Sickle: OAI-PMH for Humans
+==========================
 
 .. image:: https://pypip.in/v/Sickle/badge.png
     :target: https://crate.io/packages/Sickle/
@@ -19,9 +19,17 @@ data from OAI interfaces the Pythonic way::
     >>> records.next()
     <Record oai:eprints.rclis.org:4088>
 
+Features
+--------
+
+- Easy harvesting of OAI-compliant interfaces
+- Support for all six OAI verbs
+- Convenient object representations of OAI items (records, headers, sets, ...)
+- Automatic dictionary serialization of Dublin Core-encoded metadata payloads
+- Option for ignoring deleted items
 
 Installation
-============
+------------
 
 ::
 
@@ -33,8 +41,12 @@ Dependencies:
 * `lxml <http://lxml.de/>`_
 
 
-Links
-=====
+Documentation
+-------------
 
-* `Documentation <https://sickle.readthedocs.org/en/latest/>`_
+Documentation is available at `Read the Docs <https://sickle.readthedocs.org/en/latest/>`_
+
+Development
+-----------
+
 * `Sickle @ GitHub <https://github.com/mloesch/sickle>`_
