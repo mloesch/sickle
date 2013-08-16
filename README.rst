@@ -13,12 +13,9 @@ Sickle is lightweight `OAI-PMH <http://www.openarchives.org/OAI/openarchivesprot
 client library written in Python.  It has been designed for conveniently retrieving
 data from OAI interfaces the Pythonic way::
 
+    >>> from sickle import Sickle
     >>> sickle = Sickle('http://elis.da.ulcc.ac.uk/cgi/oai2')
     >>> records = sickle.ListRecords(metadataPrefix='oai_dc')
-
-Most importantly, Sickle lets you iterate through OAI records without having to deal
-with things like result batches or ``resumptionTokens`` yourself::
-
     >>> records.next()
     <Record oai:eprints.rclis.org:4088>
 

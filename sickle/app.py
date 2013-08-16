@@ -12,12 +12,12 @@ import time
 import requests
 from lxml import etree
 
-
 from .models import (Set, Record, Header, MetadataFormat,
-    Identify, ResumptionToken)
+                     Identify, ResumptionToken)
 from sickle import oaiexceptions
 
 import logging
+
 
 # Logging
 logger = logging.getLogger(__name__)
@@ -78,6 +78,7 @@ class Sickle(object):
                  for accessing protected OAI interfaces.
     :type auth: tuple
     """
+
     def __init__(self, endpoint, http_method='GET', protocol_version='2.0',
                  max_retries=5, timeout=None, class_mapping=None, auth=None):
         self.endpoint = endpoint
@@ -200,6 +201,7 @@ class OAIResponse(object):
     :param params: The OAI parameters for the request.
     :type params: dict
     """
+
     def __init__(self, http_response, params):
         self.params = params
         self.http_response = http_response
@@ -232,6 +234,7 @@ class OAIIterator(object):
     :param ignore_deleted: Flag for whether to ignore deleted records.
     :type ignore_deleted: bool
     """
+
     def __init__(self, oai_response, sickle, ignore_deleted=False):
         self.oai_response = oai_response
         self.sickle = sickle
@@ -308,5 +311,5 @@ class OAIIterator(object):
                 while True:
                     mapped = self.mapper(self._items.next())
                     if self.ignore_deleted and mapped.deleted:
-                        continue # pragma: no cover
+                        continue  # pragma: no cover
                     return mapped

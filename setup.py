@@ -15,11 +15,12 @@ setup(
     open('CHANGES.rst').read(),
     packages=['sickle'],
     platforms='any',
-    setup_requires=['nose>=1.0'],
+    setup_requires=[
+        'nose>=1.0',
+        'mock>=1.0.1'],
     install_requires=[
         'requests>=1.1.0',
-        'lxml>=3.2.3',
-    ],
+        'lxml>=3.2.3'],
     classifiers=[
         'Development Status :: 3 - Alpha',
         'License :: OSI Approved :: BSD License',
