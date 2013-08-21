@@ -94,7 +94,6 @@ class Sickle(object):
         self.oai_namespace = OAI_NAMESPACE % self.protocol_version
         self.class_mapping = class_mapping or DEFAULT_CLASS_MAPPING
         self.auth = auth
-        self.last_response = None
 
     def harvest(self, **kwargs):  # pragma: no cover
         """Make HTTP requests to the OAI server.
@@ -131,8 +130,7 @@ class Sickle(object):
         """
         params = kwargs
         params.update({'verb': 'ListRecords'})
-        self.last_response = self.harvest(**params)
-        return OAIIterator(self.last_response, self, ignore_deleted=ignore_deleted)
+        return OAIItemIterator(self, params, ignore_deleted=ignore_deleted)
 
     def ListIdentifiers(self, ignore_deleted=False, **kwargs):
         """Issue a ListIdentifiers request.
@@ -144,8 +142,8 @@ class Sickle(object):
         """
         params = kwargs
         params.update({'verb': 'ListIdentifiers'})
-        self.last_response = self.harvest(**params)
-        return OAIIterator(self.last_response, self, ignore_deleted=ignore_deleted)
+        return OAIItemIterator(self,
+            params, ignore_deleted=ignore_deleted)
 
     def ListSets(self, **kwargs):
         """Issue a ListSets request.
@@ -154,8 +152,7 @@ class Sickle(object):
         """
         params = kwargs
         params.update({'verb': 'ListSets'})
-        self.last_response = self.harvest(**params)
-        return OAIIterator(self.last_response, self)
+        return OAIItemIterator(self, params)
 
     def Identify(self):
         """Issue an Identify request.
@@ -163,8 +160,7 @@ class Sickle(object):
         :rtype: :class:`sickle.models.Identify`
         """
         params = {'verb': 'Identify'}
-        self.last_response = self.harvest(**params)
-        return Identify(self.last_response)
+        return Identify(self.harvest(**params))
 
     def GetRecord(self, **kwargs):
         """Issue a ListSets request.
@@ -173,11 +169,10 @@ class Sickle(object):
         """
         params = kwargs
         params.update({'verb': 'GetRecord'})
-        self.last_response = self.harvest(**params)
         # GetRecord is treated as a special case of ListRecords:
         # by creating an OAIIterator and returning the first and
         # only record.
-        return OAIIterator(self.last_response, self).next()
+        return OAIItemIterator(self, params).next()
 
     def ListMetadataFormats(self, **kwargs):
         """Issue a ListMetadataFormats request.
@@ -186,8 +181,7 @@ class Sickle(object):
         """
         params = kwargs
         params.update({'verb': 'ListMetadataFormats'})
-        self.last_response = self.harvest(**params)
-        return OAIIterator(self.last_response, self)
+        return OAIItemIterator(self, params)
 
 
 class OAIResponse(object):
@@ -220,7 +214,7 @@ class OAIResponse(object):
         return '<OAIResponse %s>' % self.params.get('verb')
 
 
-class OAIIterator(object):
+class BaseOAIIterator(object):
 
     """Iterator over OAI records/identifiers/sets transparently aggregated via
     OAI-PMH.
@@ -235,35 +229,18 @@ class OAIIterator(object):
     :type ignore_deleted: bool
     """
 
-    def __init__(self, oai_response, sickle, ignore_deleted=False):
-        self.oai_response = oai_response
+    def __init__(self, sickle, params):
         self.sickle = sickle
-        self.verb = self.oai_response.params.get("verb")
-        # Determine on what element to iterate (records, headers, or sets)
-        self.element = VERBS_ELEMENTS[self.verb]
-        # Get the reflection class for the elements returned by this verb
-        self.mapper = self.sickle.class_mapping[self.verb]
-        error = self.oai_response.xml.find(
-            './/' + self.sickle.oai_namespace + 'error')
-        if error is not None:
-            code = error.attrib.get('code', 'UNKNOWN')
-            description = error.text or ''
-            try:
-                raise getattr(
-                    oaiexceptions, code[0].upper() + code[1:])(description)
-            except AttributeError:
-                raise oaiexceptions.OAIError(description)
-
-        self._items = self.oai_response.xml.iterfind(
-            './/' + self.sickle.oai_namespace + self.element)
-        self.resumption_token = self._get_resumption_token()
-        self.ignore_deleted = ignore_deleted
+        self.params = params
+        self.verb = self.params.get('verb')
+        self.resumption_token = None
+        self._next_response()
 
     def __iter__(self):
         return self
 
     def __repr__(self):
-        return '<OAIIterator %s>' % self.verb
+        return '<%s %s>' % (self.__class__.__name__, self.verb)
 
     def _get_resumption_token(self):
         """Extract and store the resumptionToken from the last response."""
@@ -286,30 +263,63 @@ class OAIIterator(object):
 
     def _next_response(self):
         """Get the next response from the OAI server."""
-        self.oai_response = self.sickle.harvest(verb=self.verb,
-                                                resumptionToken=self.resumption_token.token)
-        logger.debug('Getting next response (resumptionToken: %s' %
-                     self.resumption_token.token)
+        params = self.params
+        if self.resumption_token:
+            params['resumptionToken'] = self.resumption_token.token
+        self.oai_response = self.sickle.harvest(**params)
+        error = self.oai_response.xml.find(
+            './/' + self.sickle.oai_namespace + 'error')
+        if error is not None:
+            code = error.attrib.get('code', 'UNKNOWN')
+            description = error.text or ''
+            try:
+                raise getattr(
+                    oaiexceptions, code[0].upper() + code[1:])(description)
+            except AttributeError:
+                raise oaiexceptions.OAIError(description)
         self.resumption_token = self._get_resumption_token()
+
+    def next(self):
+        """Must be implemented by subclasses."""
+        raise NotImplementedError
+
+
+class OAIResponseIterator(BaseOAIIterator):
+    """Iterator over OAI responses."""
+
+    def next(self):
+        """Return the next response."""
+        while True:
+            return self.oai_response
+            if self.resumption_token:
+                self._next_response()
+            else:
+                raise StopIteration
+
+
+class OAIItemIterator(BaseOAIIterator):
+    """Iterator over OAI items."""
+
+    def __init__(self, sickle, params, ignore_deleted=False):
+        self.ignore_deleted = ignore_deleted
+        self.mapper = sickle.class_mapping[params.get('verb')]
+        self.element = VERBS_ELEMENTS[params.get('verb')]
+        super(OAIItemIterator, self).__init__(sickle, params)
+
+    def _next_response(self):
+        super(OAIItemIterator, self)._next_response()
         self._items = self.oai_response.xml.iterfind(
             './/' + self.sickle.oai_namespace + self.element)
 
     def next(self):
         """Return the next record/header/set."""
-        try:
-            while True:
-                mapped = self.mapper(self._items.next())
-                if self.ignore_deleted:
-                    if mapped.deleted:
-                        continue
+        while True:
+            for item in self._items:
+                mapped = self.mapper(item)
+                if self.ignore_deleted and mapped.deleted:
+                    continue
                 return mapped
-        except StopIteration:
-            if self.resumption_token is None:
-                raise StopIteration
-            else:
+            if self.resumption_token:
                 self._next_response()
-                while True:
-                    mapped = self.mapper(self._items.next())
-                    if self.ignore_deleted and mapped.deleted:
-                        continue  # pragma: no cover
-                    return mapped
+            else:
+                raise StopIteration
