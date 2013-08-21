@@ -39,6 +39,6 @@ proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</dc:des
                 </oai_dc:dc>
             </metadata>
         </record>
-        <resumptionToken completeListSize="8" cursor="0">ListRecords2.xml</resumptionToken>
+        <resumptionToken completeListSize="8" cursor="0">ListRecords4.xml</resumptionToken>
     </ListRecords>
 </OAI-PMH>

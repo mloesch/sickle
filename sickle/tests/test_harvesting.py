@@ -84,7 +84,7 @@ def test_broken_XML():
 def test_ListRecords():
     sickle = Sickle('fake_url')
     records = sickle.ListRecords(metadataPrefix='oai_dc')
-    assert len([r for r in records]) == 400
+    assert len([r for r in records]) == 8
 
 
 @mock.patch('sickle.app.Sickle.harvest', fake_harvest)
@@ -93,7 +93,7 @@ def test_ListRecords_ignore_deleted():
     records = sickle.ListRecords(metadataPrefix='oai_dc', ignore_deleted=True)
     # There are twelve deleted records in the test data
     num_records = len([r for r in records])
-    assert num_records == 388
+    assert num_records == 4
 
 
 @mock.patch('sickle.app.Sickle.harvest', fake_harvest)
@@ -119,7 +119,7 @@ def test_ListMetadataFormats():
 def test_ListIdentifiers():
     sickle = Sickle('fake_url')
     records = sickle.ListIdentifiers(metadataPrefix='oai_dc')
-    assert len([r for r in records]) == 400
+    assert len([r for r in records]) == 4
 
 
 @mock.patch('sickle.app.Sickle.harvest', fake_harvest)
@@ -129,7 +129,7 @@ def test_ListIdentifiers_ignore_deleted():
         metadataPrefix='oai_dc', ignore_deleted=True)
     # There are ten deleted headers in the test data
     num_records = len([r for r in records])
-    assert num_records == 390
+    assert num_records == 2
 
 
 @mock.patch('sickle.app.Sickle.harvest', fake_harvest)
