@@ -10,6 +10,7 @@ from sickle.oaiexceptions import BadArgument, CannotDisseminateFormat,\
     IdDoesNotExist, NoSetHierarchy, BadResumptionToken, NoRecordsMatch, OAIError
 from nose.tools import assert_raises, assert_true, raises
 
+import unittest
 import mock
 
 this_dir, this_filename = os.path.split(__file__)
@@ -63,156 +64,124 @@ def fake_harvest(*args, **kwargs):
     return OAIResponse(response, kwargs)
 
 
-@mock.patch('sickle.app.Sickle.harvest', fake_harvest)
-def test_OAIResponse():
-    sickle = Sickle('fake_url')
-    response = sickle.harvest(verb='ListRecords', metadataPrefix='oai_dc')
-    response.xml
-    response.raw
+class TestCase(unittest.TestCase):
+
+    def setUp(self):
+        mock.patch('sickle.app.Sickle.harvest', fake_harvest).start()
+        self.sickle = Sickle('fake_url')
+
+    def test_OAIResponse(self):
+        response = self.sickle.harvest(verb='ListRecords', metadataPrefix='oai_dc')
+        response.xml
+        response.raw
+
+    def test_broken_XML(self):
+        response = self.sickle.harvest(
+            verb='ListRecords', resumptionToken='ListRecordsBroken.xml')
+        response.xml
+        response.raw
+
+    def test_ListRecords(self):
+        records = self.sickle.ListRecords(metadataPrefix='oai_dc')
+        assert len([r for r in records]) == 8
+
+    def test_ListRecords_ignore_deleted(self):
+        records = self.sickle.ListRecords(metadataPrefix='oai_dc', ignore_deleted=True)
+        # There are twelve deleted records in the test data
+        num_records = len([r for r in records])
+        assert num_records == 4
 
 
-@mock.patch('sickle.app.Sickle.harvest', fake_harvest)
-def test_broken_XML():
-    sickle = Sickle('fake_url')
-    response = sickle.harvest(
-        verb='ListRecords', resumptionToken='ListRecordsBroken.xml')
-    response.xml
-    response.raw
+    def test_ListSets(self):
+
+        sets = self.sickle.ListSets()
+        num_sets = len([s for s in sets])
+        assert num_sets == 131
+        dict(s)
+
+    def test_ListMetadataFormats(self):
+        mdfs = self.sickle.ListMetadataFormats()
+        num_mdfs = len([mdf for mdf in mdfs])
+        assert num_mdfs == 5
+
+        dict(mdf)
+
+    def test_ListIdentifiers(self):
+        records = self.sickle.ListIdentifiers(metadataPrefix='oai_dc')
+        assert len([r for r in records]) == 4
+
+    def test_ListIdentifiers_ignore_deleted(self):
+        records = self.sickle.ListIdentifiers(
+            metadataPrefix='oai_dc', ignore_deleted=True)
+            # There are 2 deleted headers in the test data
+        num_records = len([r for r in records])
+        assert num_records == 2
 
 
-@mock.patch('sickle.app.Sickle.harvest', fake_harvest)
-def test_ListRecords():
-    sickle = Sickle('fake_url')
-    records = sickle.ListRecords(metadataPrefix='oai_dc')
-    assert len([r for r in records]) == 8
+    def test_Identify(self):
+        identify = self.sickle.Identify()
+        assert hasattr(identify, 'repositoryName')
+        assert hasattr(identify, 'baseURL')
+        assert hasattr(identify, 'adminEmail')
+        assert hasattr(identify, 'earliestDatestamp')
+        assert hasattr(identify, 'deletedRecord')
+        assert hasattr(identify, 'granularity')
+        assert hasattr(identify, 'description')
+        assert hasattr(identify, 'oai_identifier')
+        assert hasattr(identify, 'sampleIdentifier')
+        dict(identify)
+
+    def test_GetRecord(self):
+        oai_id = 'oai:test.example.com:1996652'
+        record = self.sickle.GetRecord(identifier=oai_id)
+        assert record.header.identifier == oai_id
+        assert oai_id in record.raw
+        record.xml
+        str(record)
+        unicode(record)
+        dict(record.header)
+        assert dict(record) == record.metadata
+
+    # Test OAI-specific exceptions
+
+    @raises(BadArgument)
+    def test_badArgument(self):
+        records = self.sickle.ListRecords(metadataPrefix='oai_dc',
+            error='badArgument')
+
+    @raises(CannotDisseminateFormat)
+    def test_cannotDisseminateFormat(self):
+        records = self.sickle.ListRecords(
+            metadataPrefix='oai_dc', error='cannotDisseminateFormat')
+
+    @raises(IdDoesNotExist)
+    def test_idDoesNotExist(self):
+        records = self.sickle.GetRecord(
+            metadataPrefix='oai_dc', error='idDoesNotExist')
+
+    @raises(NoSetHierarchy)
+    def test_idDoesNotExist(self):
+        records = self.sickle.ListSets(
+            metadataPrefix='oai_dc', error='noSetHierarchy')
 
 
-@mock.patch('sickle.app.Sickle.harvest', fake_harvest)
-def test_ListRecords_ignore_deleted():
-    sickle = Sickle('fake_url')
-    records = sickle.ListRecords(metadataPrefix='oai_dc', ignore_deleted=True)
-    # There are twelve deleted records in the test data
-    num_records = len([r for r in records])
-    assert num_records == 4
+    @raises(BadResumptionToken)
+    def test_badResumptionToken(self):
+        records = self.sickle.ListRecords(
+            metadataPrefix='oai_dc', error='badResumptionToken')
 
+    @raises(NoRecordsMatch)
+    def test_noRecordsMatch(self):
+        records = self.sickle.ListRecords(
+            metadataPrefix='oai_dc', error='noRecordsMatch')
 
-@mock.patch('sickle.app.Sickle.harvest', fake_harvest)
-def test_ListSets():
-    sickle = Sickle('fake_url')
-    sets = sickle.ListSets()
-    num_sets = len([s for s in sets])
-    assert num_sets == 131
-    dict(s)
+    @raises(OAIError)
+    def test_undefined_OAI_error_XML(self):
+        records = self.sickle.ListRecords(
+            metadataPrefix='oai_dc', error='undefinedError')
 
-
-@mock.patch('sickle.app.Sickle.harvest', fake_harvest)
-def test_ListMetadataFormats():
-    sickle = Sickle('fake_url')
-    mdfs = sickle.ListMetadataFormats()
-    num_mdfs = len([mdf for mdf in mdfs])
-    assert num_mdfs == 5
-
-    dict(mdf)
-
-
-@mock.patch('sickle.app.Sickle.harvest', fake_harvest)
-def test_ListIdentifiers():
-    sickle = Sickle('fake_url')
-    records = sickle.ListIdentifiers(metadataPrefix='oai_dc')
-    assert len([r for r in records]) == 4
-
-
-@mock.patch('sickle.app.Sickle.harvest', fake_harvest)
-def test_ListIdentifiers_ignore_deleted():
-    sickle = Sickle('fake_url')
-    records = sickle.ListIdentifiers(
-        metadataPrefix='oai_dc', ignore_deleted=True)
-    # There are ten deleted headers in the test data
-    num_records = len([r for r in records])
-    assert num_records == 2
-
-
-@mock.patch('sickle.app.Sickle.harvest', fake_harvest)
-def test_Identify():
-    sickle = Sickle('fake_url')
-    identify = sickle.Identify()
-    assert hasattr(identify, 'repositoryName')
-    assert hasattr(identify, 'baseURL')
-    assert hasattr(identify, 'adminEmail')
-    assert hasattr(identify, 'earliestDatestamp')
-    assert hasattr(identify, 'deletedRecord')
-    assert hasattr(identify, 'granularity')
-    assert hasattr(identify, 'description')
-    assert hasattr(identify, 'oai_identifier')
-    assert hasattr(identify, 'sampleIdentifier')
-    dict(identify)
-
-
-@mock.patch('sickle.app.Sickle.harvest', fake_harvest)
-def test_GetRecord():
-    sickle = Sickle('fake_url')
-    oai_id = 'oai:test.example.com:1996652'
-    record = sickle.GetRecord(identifier=oai_id)
-    assert record.header.identifier == oai_id
-    assert oai_id in record.raw
-    record.xml
-    str(record)
-    unicode(record)
-    dict(record.header)
-    assert dict(record) == record.metadata
-
-# Test OAI-specific exceptions
-
-
-@mock.patch('sickle.app.Sickle.harvest', fake_harvest)
-@raises(BadArgument)
-def test_badArgument():
-    sickle = Sickle('fake_url')
-    records = sickle.ListRecords(metadataPrefix='oai_dc', error='badArgument')
-
-
-@mock.patch('sickle.app.Sickle.harvest', fake_harvest)
-@raises(CannotDisseminateFormat)
-def test_cannotDisseminateFormat():
-    sickle = Sickle('fake_url')
-    records = sickle.ListRecords(
-        metadataPrefix='oai_dc', error='cannotDisseminateFormat')
-
-
-@mock.patch('sickle.app.Sickle.harvest', fake_harvest)
-@raises(IdDoesNotExist)
-def test_idDoesNotExist():
-    records = sickle.GetRecord(
-        metadataPrefix='oai_dc', error='idDoesNotExist')
-
-
-@mock.patch('sickle.app.Sickle.harvest', fake_harvest)
-@raises(NoSetHierarchy)
-def test_idDoesNotExist():
-    sickle = Sickle('fake_url')
-    records = sickle.ListSets(
-        metadataPrefix='oai_dc', error='noSetHierarchy')
-
-
-@mock.patch('sickle.app.Sickle.harvest', fake_harvest)
-@raises(BadResumptionToken)
-def test_badResumptionToken():
-    sickle = Sickle('fake_url')
-    records = sickle.ListRecords(
-        metadataPrefix='oai_dc', error='badResumptionToken')
-
-
-@mock.patch('sickle.app.Sickle.harvest', fake_harvest)
-@raises(NoRecordsMatch)
-def test_noRecordsMatch():
-    sickle = Sickle('fake_url')
-    records = sickle.ListRecords(
-        metadataPrefix='oai_dc', error='noRecordsMatch')
-
-
-@mock.patch('sickle.app.Sickle.harvest', fake_harvest)
-@raises(OAIError)
-def test_undefined_OAI_error_XML():
-    sickle = Sickle('fake_url')
-    records = sickle.ListRecords(
-        metadataPrefix='oai_dc', error='undefinedError')
+    @mock.patch('sickle.app.Sickle.harvest', fake_harvest)
+    def test_OAIResponseIterator(self):
+        sickle = Sickle('fake_url', rtype='response')
+        records = [r for r in sickle.ListRecords(metadataPrefix='oai_dc')]
+        assert len(records) == 4
