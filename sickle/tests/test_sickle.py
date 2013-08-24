@@ -21,7 +21,3 @@ class TestCase(unittest.TestCase):
     @raises(ValueError)
     def test_wrong_protocol_version(self):
         sickle = Sickle("http://localhost", protocol_version="3.0")
-
-    @raises(ValueError)
-    def test_wrong_protocol_version(self):
-        sickle = Sickle("http://localhost", protocol_version="3.0")
