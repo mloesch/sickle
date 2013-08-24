@@ -80,7 +80,8 @@ class Sickle(object):
     """
 
     def __init__(self, endpoint, http_method='GET', protocol_version='2.0',
-                 max_retries=5, timeout=None, class_mapping=None, auth=None):
+                 rtype='item', max_retries=5, timeout=None, class_mapping=None,
+                 auth=None):
         self.endpoint = endpoint
         if http_method not in ['GET', 'POST']:
             raise ValueError("Invalid HTTP method: %s! Must be GET or POST.")
@@ -89,6 +90,10 @@ class Sickle(object):
                 "Invalid protocol version: %s! Must be 1.0 or 2.0.")
         self.http_method = http_method
         self.protocol_version = protocol_version
+        if rtype == 'item':
+            self.Iterator = OAIItemIterator
+        elif rtype == 'response':
+            self.Iterator = OAIResponseIterator
         self.max_retries = max_retries
         self.timeout = timeout
         self.oai_namespace = OAI_NAMESPACE % self.protocol_version
@@ -130,7 +135,7 @@ class Sickle(object):
         """
         params = kwargs
         params.update({'verb': 'ListRecords'})
-        return OAIItemIterator(self, params, ignore_deleted=ignore_deleted)
+        return self.Iterator(self, params, ignore_deleted=ignore_deleted)
 
     def ListIdentifiers(self, ignore_deleted=False, **kwargs):
         """Issue a ListIdentifiers request.
@@ -142,7 +147,7 @@ class Sickle(object):
         """
         params = kwargs
         params.update({'verb': 'ListIdentifiers'})
-        return OAIItemIterator(self,
+        return self.Iterator(self,
             params, ignore_deleted=ignore_deleted)
 
     def ListSets(self, **kwargs):
@@ -152,7 +157,7 @@ class Sickle(object):
         """
         params = kwargs
         params.update({'verb': 'ListSets'})
-        return OAIItemIterator(self, params)
+        return self.Iterator(self, params)
 
     def Identify(self):
         """Issue an Identify request.
@@ -172,7 +177,7 @@ class Sickle(object):
         # GetRecord is treated as a special case of ListRecords:
         # by creating an OAIIterator and returning the first and
         # only record.
-        return OAIItemIterator(self, params).next()
+        return self.Iterator(self, params).next()
 
     def ListMetadataFormats(self, **kwargs):
         """Issue a ListMetadataFormats request.
@@ -181,7 +186,7 @@ class Sickle(object):
         """
         params = kwargs
         params.update({'verb': 'ListMetadataFormats'})
-        return OAIItemIterator(self, params)
+        return self.Iterator(self, params)
 
 
 class OAIResponse(object):
@@ -229,9 +234,10 @@ class BaseOAIIterator(object):
     :type ignore_deleted: bool
     """
 
-    def __init__(self, sickle, params):
+    def __init__(self, sickle, params, ignore_deleted=False):
         self.sickle = sickle
         self.params = params
+        self.ignore_deleted = ignore_deleted
         self.verb = self.params.get('verb')
         self.resumption_token = None
         self._next_response()
@@ -290,8 +296,11 @@ class OAIResponseIterator(BaseOAIIterator):
     def next(self):
         """Return the next response."""
         while True:
-            return self.oai_response
-            if self.resumption_token:
+            if self.oai_response:
+                response = self.oai_response
+                self.oai_response = None
+                return response
+            elif self.resumption_token:
                 self._next_response()
             else:
                 raise StopIteration
@@ -301,10 +310,9 @@ class OAIItemIterator(BaseOAIIterator):
     """Iterator over OAI items."""
 
     def __init__(self, sickle, params, ignore_deleted=False):
-        self.ignore_deleted = ignore_deleted
         self.mapper = sickle.class_mapping[params.get('verb')]
         self.element = VERBS_ELEMENTS[params.get('verb')]
-        super(OAIItemIterator, self).__init__(sickle, params)
+        super(OAIItemIterator, self).__init__(sickle, params, ignore_deleted)
 
     def _next_response(self):
         super(OAIItemIterator, self)._next_response()
