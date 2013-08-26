@@ -26,7 +26,7 @@ Iterating through OAI Items
 ===========================
 
 
-.. autoclass:: sickle.app.OAIIterator
+.. autoclass:: sickle.app.OAIItemIterator
     :members:
 
     .. attribute oai_response
@@ -60,14 +60,14 @@ Classes for OAI Items
 =====================
 
 The following classes represent OAI-specific items like records, headers, and sets.
-All items feature the attributes :attr:`raw` and :attr:`xml` which contain their 
+All items feature the attributes :attr:`raw` and :attr:`xml` which contain their
 original XML representation as unicode and as parsed XML objects.
 
 
 Identify Object
 ---------------
 
-The Identify object is generated from Identify responses and is returned by 
+The Identify object is generated from Identify responses and is returned by
 :meth:`sickle.app.Sickle.Identify`.  It contains general information about
 the repository.
 
@@ -77,7 +77,7 @@ the repository.
 
     .. note::
 
-        As the attributes of this class are auto-generated from the Identify XML elements, 
+        As the attributes of this class are auto-generated from the Identify XML elements,
         some of them may be missing for specific OAI interfaces.
 
     .. attribute:: adminEmail
@@ -161,7 +161,7 @@ Record objects represent single OAI records.
 Header Object
 -------------
 
-Header objects represent OAI headers. 
+Header objects represent OAI headers.
 
 .. autoclass:: sickle.models.Header
     :members:

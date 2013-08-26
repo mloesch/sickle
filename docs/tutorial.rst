@@ -6,83 +6,6 @@ This section gives a brief overview on how to use Sickle for querying OAI
 interfaces.
 
 
-OAI-PMH Primer
-==============
-
-This section gives a basic overview of
-the `Open Archives Protocol for Metadata Harvesting (OAI-PMH) <http://openarchives.org>`_.
-For more detailed information, please refer to the protocol specification.
-
-Glossary of Important OAI-PMH Concepts
---------------------------------------
-
-**Repository**
-    A *repository* is a server-side application that exposes metadata via OAI-PMH.
-**Harvester**
-    OAI-PMH client applications like Sickle are called *harvesters*.
-**record**
-    A *record* is the XML-encoded container for the metadata of a single publication item.
-    It consists of a *header* and a *metadata* section.
-**header**
-    The record *header* contains a unique identifier and a datestamp.
-**metadata**
-    The record *metadata* contains the publication metadata in a defined
-    metadata format.
-**set**
-    A structure for grouping records for selective harvesting.
-**harvesting**
-    The process of requesting records from the repository by the harvester.
-
-OAI Verbs
----------
-
-OAI-PMH  features six main API methods (so-called "OAI verbs") that can be issued by
-harvesters. Some verbs can be combined with further arguments:
-
-``Identify``
-    Returns information about the repository. Arguments: None.
-``GetRecord``
-    Returns a single record. Arguments:
-
-    * ``identifier`` (the unique identifier of the record, *required*)
-    * ``metadataPrefix`` (the prefix identifying the metadata format, *required*)
-``ListRecords``
-    Returns the records in the repository in batches (possibly filtered by a timestamp or a ``set``).
-    Arguments:
-
-    * ``metadataPrefix`` (the prefix identifying the metadata format, *required*)
-    * ``from`` (the earliest timestamp of the records, *optional*)
-    * ``until`` (the latest timestamp of the records, *optional*)
-    * ``set`` (a set for selective harvesting, *optional*)
-    * ``resumptionToken`` (used for getting the next result batch if the number of records returned by the previous request exceeds the repository's maximum batch size, *exclusive*)
-``ListIdentifiers``
-    *Like* ``ListRecords`` *but returns only the record headers.*
-``ListSets``
-    Returns the list of sets supported by this repository.
-    Arguments: None
-``ListMetadataFormats``
-    Returns the list of metadata formats supported by this repository.
-    Arguments: None
-
-
-Metadata Formats
-----------------
-
-OAI interfaces may expose metadata records in multiple metadata formats. These
-formats are identified by so-called "metadata prefixes". For instance, the
-prefix ``oai_dc`` refers to the OAI-DC format, which by definition has to be
-exposed by every valid OAI interface. OAI-DC is based on the 15 metadata
-elements specified in the
-`Dublin Core Metadata Element Set <http://dublincore.org/documents/dces/>`_.
-
-
-.. note::
-
-    Sickle only supports the OAI-DC format out of the box. See the section
-    on :ref:`customizing <customizing>` for information on how to extend
-    Sickle for retrieving metadata in other formats.
-
-
 Initialize an OAI Interface
 ===========================
 
@@ -111,6 +34,62 @@ Consequently, we can add additional parameters, like ``set`` for example::
 
     >>> records = sickle.ListRecords(metadataPrefix='oai_dc', set='driver')
 
+Consecutive Harvesting
+======================
+
+Since most OAI verbs yield more than one element, the respective Sickle methods
+return iterator objects which can be used to iterate through the records of a
+repository::
+
+    >>> records = sickle.ListRecords(metadataPrefix='oai_dc')
+    >>> records.next()
+    <Record oai:eprints.rclis.org:4088>
+
+Note that this works with all verbs that return more than one element.
+These are: :meth:`~sickle.app.Sickle.ListRecords`, :meth:`~sickle.app.Sickle.ListIdentifiers`,
+:meth:`~sickle.app.Sickle.ListSets`, and :meth:`~sickle.app.Sickle.ListMetadataFormats`.
+
+The following example shows how to iterate over the headers returned by ``ListIdentifiers``::
+
+    >>> headers = sickle.ListIdentifiers(metadataPrefix='oai_dc')
+    >>> headers.next()
+    <Header oai:eprints.rclis.org:4088>
+
+Iterating over the the sets returned by ``ListSets`` works similarly::
+
+    >>> sets = sickle.ListSets()
+    >>> sets.next()
+    <Set Status = In Press>
+
+
+Harvesting OAI Items vs. OAI Responses
+======================================
+
+Sickle supports two harvesting modes, ``item`` and ``response`` that differ in the
+type of the returned objects. While the ``item`` mode returns OAI-specific *items*
+(records, headers etc.) encoded as Python objects, the ``response`` mode returns
+:class:`sickle.app.OAIResponse` objects that encode complete OAI-PMH responses.
+The harvesting mode can be selected during the instantiation of the
+:class:`sickle.app.Sickle` object. For harvesting items, use::
+
+    >>> sickle = Sickle('http://elis.da.ulcc.ac.uk/cgi/oai2', rtype='item')
+    >>> records = Sickle.ListRecords(metadataPrefix='oai_dc')
+    >>> records.next()
+    <Record ...>
+
+Harvesting responses works like this::
+
+    >>> sickle = Sickle('http://elis.da.ulcc.ac.uk/cgi/oai2', rtype='response')
+    >>> responses = Sickle.ListRecords(metadataPrefix='oai_dc')
+    >>> responses.next()
+    <OAIResponse ListRecords>
+
+.. note:: The default response type is ``item``.
+
+Which mode to use depends on your use case: If you want to work directly with the *contents* of the repository, e.g., the metadata payloads of single records, you should use item mode harvesting. Conversely, if you want to *store* the complete XML responses of a repository
+for later use (e.g., indexing for a search application), you may want to use the response
+harvesting mode.
+
 
 Using the ``from`` Parameter
 ============================
@@ -128,46 +107,18 @@ Fortunately, you can circumvent this problem by using a dictionary together with
 the ``**`` operator::
 
     >>> records = sickle.ListRecords(
-    ...     **{'metadataPrefix': 'oai_dc',
-    ...       'from': '2012-12-12'
-    ...       }
-    ... )
-
-
-Iterative Harvesting
-====================
-
-Sickle lets you conveniently iterate through resumption batches
-without having to deal with ``resumptionTokens`` yourself::
-
-    >>> records = sickle.ListRecords(metadataPrefix='oai_dc')
-    >>> records.next()
-    <Record oai:eprints.rclis.org:4088>
-
-Note that this works with all requests that return more than one element.
-These are: :meth:`~sickle.app.Sickle.ListRecords`, :meth:`~sickle.app.Sickle.ListIdentifiers`,
-:meth:`~sickle.app.Sickle.ListSets`, and :meth:`~sickle.app.Sickle.ListMetadataFormats`.
-
-Iterating through the headers returned by ``ListIdentifiers``::
-
-    >>> headers = sickle.ListIdentifiers(metadataPrefix='oai_dc')
-    >>> headers.next()
-    <Header oai:eprints.rclis.org:4088>
-
-Or through the sets returned by ``ListSets``::
-
-    >>> sets = sickle.ListSets()
-    >>> sets.next()
-    <Set Status = In Press>
+    ...             **{'metadataPrefix': 'oai_dc',
+    ...             'from': '2012-12-12'
+    ...            })
 
 
 Getting a Single Record
 =======================
 
-OAI-PMH allows you to get a single record by using the ``GetRecord`` verb. And so does Sickle:
+OAI-PMH allows you to get a single record by using the ``GetRecord`` verb::
 
     >>> sickle.GetRecord(identifier='oai:eprints.rclis.org:4088',
-    ...            metadataPrefix='oai_dc')
+    ...                  metadataPrefix='oai_dc')
     <Record oai:eprints.rclis.org:4088>
 
 
@@ -175,7 +126,13 @@ Ignoring Deleted Records
 ========================
 
 The :meth:`~sickle.app.Sickle.ListRecords` and :meth:`~sickle.app.Sickle.ListIdentifiers`
-methods take an optional parameter :attr:`ignore_deleted`. If it is set to :obj:`True`,
-the returned :class:`~sickle.app.OAIIterator` will skip deleted records/headers::
+methods accept an optional parameter :attr:`ignore_deleted`. If it is set to :obj:`True`,
+the returned :class:`~sickle.app.OAIItemIterator` will skip deleted records/headers::
 
     >>> records = sickle.ListRecords(metadataPrefix='oai_dc', ignore_deleted=True)
+
+.. note::
+
+    This works only in ``item`` mode harvesting. In ``response`` mode, the resulting
+    OAI responses will still contain the deleted records.
+

@@ -59,7 +59,7 @@ def fake_harvest(*args, **kwargs):
     else:
         filename = '%s.xml' % verb
     response = FakeResponse(open(
-        os.path.join(this_dir, 'xml', filename), 'r').read().decode('utf8'))
+        os.path.join(this_dir, 'sample_data', filename), 'r').read().decode('utf8'))
 
     return OAIResponse(response, kwargs)
 

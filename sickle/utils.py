@@ -1,7 +1,7 @@
 # coding: utf-8
 """
-    utils
-    ~~~~~
+    sickle.utils
+    ~~~~~~~~~~~~
 
     Collects utility functions.
 

@@ -65,6 +65,8 @@ class Sickle(object):
     :type http_method: str
     :param protocol_version: The OAI protocol version.
     :type protocol_version: str
+    :param rtype: The type of the returned iterator: ``item`` or ``response``.
+    :type rtype: str
     :param max_retries: Number of retries if HTTP request fails.
     :type max_retries: int
     :param timeout: Timeout for HTTP requests.
@@ -148,7 +150,7 @@ class Sickle(object):
         params = kwargs
         params.update({'verb': 'ListIdentifiers'})
         return self.Iterator(self,
-            params, ignore_deleted=ignore_deleted)
+                             params, ignore_deleted=ignore_deleted)
 
     def ListSets(self, **kwargs):
         """Issue a ListSets request.
@@ -226,10 +228,10 @@ class BaseOAIIterator(object):
 
     Can be used to conveniently iterate through the records of a repository.
 
-    :param oai_response: The first OAI response.
-    :type oai_response: :class:`sickle.app.OAIResponse`
     :param sickle: The Sickle object that issued the first request.
     :type sickle: :class:`sickle.app.Sickle`
+    :param params: The OAI arguments.
+    :type params:  dict
     :param ignore_deleted: Flag for whether to ignore deleted records.
     :type ignore_deleted: bool
     """
@@ -291,6 +293,7 @@ class BaseOAIIterator(object):
 
 
 class OAIResponseIterator(BaseOAIIterator):
+
     """Iterator over OAI responses."""
 
     def next(self):
@@ -307,7 +310,19 @@ class OAIResponseIterator(BaseOAIIterator):
 
 
 class OAIItemIterator(BaseOAIIterator):
-    """Iterator over OAI items."""
+
+    """Iterator over OAI records/identifiers/sets transparently aggregated via
+    OAI-PMH.
+
+    Can be used to conveniently iterate through the records of a repository.
+
+    :param sickle: The Sickle object that issued the first request.
+    :type sickle: :class:`sickle.app.Sickle`
+    :param params: The OAI arguments.
+    :type params:  dict
+    :param ignore_deleted: Flag for whether to ignore deleted records.
+    :type ignore_deleted: bool
+    """
 
     def __init__(self, sickle, params, ignore_deleted=False):
         self.mapper = sickle.class_mapping[params.get('verb')]
