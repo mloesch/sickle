@@ -1,8 +1,20 @@
 Changelog
 =========
 
+
+Version 0.4
+-----------
+
+September 1, 2013
+
+- 100% test coverage
+- two harvesting modes: item and response
+
+
 Version 0.3
 -----------
+
+April 17, 2013
 
 - added support for protected OAI interfaces (basic auth)
 - made class mapping for OAI elements configurable
@@ -12,6 +24,8 @@ Version 0.3
 
 Version 0.2
 -----------
+
+February 26, 2013
 
 - OAI items are now represented as their own classes instead of XML elements
 - library raises OAI-specific exceptions
