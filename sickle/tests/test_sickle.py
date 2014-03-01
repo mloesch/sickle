@@ -4,20 +4,20 @@
     ~~~~~~~~~~~~~~~~~~~~~~~~
 """
 import os
+import unittest
+
+from nose.tools import raises
 
 from sickle import Sickle
-from nose.tools import assert_raises, assert_true, raises
-
-import unittest
 
 this_dir, this_filename = os.path.split(__file__)
 
-class TestCase(unittest.TestCase):
 
+class TestCase(unittest.TestCase):
     @raises(ValueError)
-    def test_wrong_http_meth(self):
-        sickle = Sickle("http://localhost", http_method="GHOST")
+    def test_invalid_http_method(self):
+        Sickle("http://localhost", http_method="DELETE")
 
     @raises(ValueError)
     def test_wrong_protocol_version(self):
-        sickle = Sickle("http://localhost", protocol_version="3.0")
+        Sickle("http://localhost", protocol_version="3.0")

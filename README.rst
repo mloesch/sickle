@@ -9,9 +9,9 @@ Sickle: OAI-PMH for Humans
     :target: https://crate.io/packages/Sickle/
     :alt: Number of PyPI downloads
 
-Sickle is lightweight `OAI-PMH <http://www.openarchives.org/OAI/openarchivesprotocol.html>`_
-client library written in Python.  It has been designed for conveniently retrieving
-data from OAI interfaces the Pythonic way::
+Sickle is a lightweight `OAI-PMH <http://www.openarchives.org/OAI/openarchivesprotocol.html>`_
+client library written in Python.  It has been designed for conveniently retrieving data from
+OAI interfaces the Pythonic way::
 
     >>> from sickle import Sickle
     >>> sickle = Sickle('http://elis.da.ulcc.ac.uk/cgi/oai2')

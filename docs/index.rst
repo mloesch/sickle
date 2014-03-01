@@ -2,9 +2,8 @@
 Sickle: OAI-PMH for Humans
 **************************
 
-Sickle is lightweight `OAI-PMH <http://www.openarchives.org/OAI/openarchivesprotocol.html>`_
-client library written in Python.  It has been designed for conveniently retrieving
-data from OAI interfaces the Pythonic way::
+Sickle is a lightweight `OAI-PMH <http://www.openarchives.org/OAI/openarchivesprotocol.html>`_
+client library written in Python.  It has been designed for conveniently retrieving data from OAI interfaces the Pythonic way::
 
     >>> sickle = Sickle('http://elis.da.ulcc.ac.uk/cgi/oai2')
     >>> records = sickle.ListRecords(metadataPrefix='oai_dc')

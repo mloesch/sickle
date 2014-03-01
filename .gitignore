@@ -5,3 +5,4 @@ dist/
 sickle.egg-info/
 coverage.xml
 .coverage*
+.idea

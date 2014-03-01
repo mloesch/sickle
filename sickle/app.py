@@ -9,6 +9,8 @@
 """
 
 import time
+import logging
+
 import requests
 from lxml import etree
 
@@ -16,19 +18,15 @@ from .models import (Set, Record, Header, MetadataFormat,
                      Identify, ResumptionToken)
 from sickle import oaiexceptions
 
-import logging
 
-
-# Logging
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 
 OAI_NAMESPACE = '{http://www.openarchives.org/OAI/%s/}'
 XMLParser = etree.XMLParser(remove_blank_text=True, recover=True)
 
 
 # Map OAI verbs to class representations
-DEFAULT_CLASS_MAPPING = {
+DEFAULT_CLASS_MAP = {
     'GetRecord': Record,
     'ListRecords': Record,
     'ListIdentifiers': Header,
@@ -49,7 +47,6 @@ VERBS_ELEMENTS = {
 
 
 class Sickle(object):
-
     """Client for harvesting OAI interfaces.
 
     Use it like this::
@@ -93,19 +90,19 @@ class Sickle(object):
         self.http_method = http_method
         self.protocol_version = protocol_version
         if rtype == 'item':
-            self.Iterator = OAIItemIterator
+            self.iterator = OAIItemIterator
         elif rtype == 'response':
-            self.Iterator = OAIResponseIterator
+            self.iterator = OAIResponseIterator
         self.max_retries = max_retries
         self.timeout = timeout
         self.oai_namespace = OAI_NAMESPACE % self.protocol_version
-        self.class_mapping = class_mapping or DEFAULT_CLASS_MAPPING
+        self.class_mapping = class_mapping or DEFAULT_CLASS_MAP
         self.auth = auth
 
     def harvest(self, **kwargs):  # pragma: no cover
         """Make HTTP requests to the OAI server.
 
-        :param kwargs: The OAI HTTP arguments.
+        :param kwargs: OAI HTTP parameters.
         :rtype: :class:`sickle.app.OAIResponse`
         """
         for _ in xrange(self.max_retries):
@@ -121,7 +118,7 @@ class Sickle(object):
                 except TypeError:
                     retry_after = 20
                 logger.info(
-                    "Status code 503. Waiting %d seconds ... " % retry_after)
+                    "HTTP 503! Retrying after %d seconds..." % retry_after)
                 time.sleep(retry_after)
             else:
                 http_response.raise_for_status()
@@ -133,11 +130,11 @@ class Sickle(object):
         :param ignore_deleted: If set to :obj:`True`, the resulting
                               :class:`sickle.app.OAIIterator` will skip records
                               flagged as deleted.
-        :rtype: :class:`sickle.app.OAIIterator`
+        :rtype: :class:`sickle.app.BaseOAIIterator`
         """
         params = kwargs
         params.update({'verb': 'ListRecords'})
-        return self.Iterator(self, params, ignore_deleted=ignore_deleted)
+        return self.iterator(self, params, ignore_deleted=ignore_deleted)
 
     def ListIdentifiers(self, ignore_deleted=False, **kwargs):
         """Issue a ListIdentifiers request.
@@ -145,21 +142,21 @@ class Sickle(object):
         :param ignore_deleted: If set to :obj:`True`, the resulting
                               :class:`sickle.app.OAIIterator` will skip records
                               flagged as deleted.
-        :rtype: :class:`sickle.app.OAIIterator`
+        :rtype: :class:`sickle.app.BaseOAIIterator`
         """
         params = kwargs
         params.update({'verb': 'ListIdentifiers'})
-        return self.Iterator(self,
+        return self.iterator(self,
                              params, ignore_deleted=ignore_deleted)
 
     def ListSets(self, **kwargs):
         """Issue a ListSets request.
 
-        :rtype: :class:`sickle.app.OAIIterator`
+        :rtype: :class:`sickle.app.BaseOAIIterator`
         """
         params = kwargs
         params.update({'verb': 'ListSets'})
-        return self.Iterator(self, params)
+        return self.iterator(self, params)
 
     def Identify(self):
         """Issue an Identify request.
@@ -170,35 +167,29 @@ class Sickle(object):
         return Identify(self.harvest(**params))
 
     def GetRecord(self, **kwargs):
-        """Issue a ListSets request.
-
-        :rtype: :class:`sickle.models.Record`
-        """
+        """Issue a ListSets request."""
         params = kwargs
         params.update({'verb': 'GetRecord'})
-        # GetRecord is treated as a special case of ListRecords:
-        # by creating an OAIIterator and returning the first and
-        # only record.
-        return self.Iterator(self, params).next()
+        record = self.iterator(self, params).next()
+        return record
 
     def ListMetadataFormats(self, **kwargs):
         """Issue a ListMetadataFormats request.
 
-        :rtype: :class:`sickle.app.OAIIterator`
+        :rtype: :class:`sickle.app.BaseOAIIterator`
         """
         params = kwargs
         params.update({'verb': 'ListMetadataFormats'})
-        return self.Iterator(self, params)
+        return self.iterator(self, params)
 
 
 class OAIResponse(object):
-
     """A response from an OAI server.
 
     Provides access to the returned data on different abstraction
     levels.
 
-    :param response: The original HTTP response.
+    :param http_response: The original HTTP response.
     :param params: The OAI parameters for the request.
     :type params: dict
     """
@@ -222,7 +213,6 @@ class OAIResponse(object):
 
 
 class BaseOAIIterator(object):
-
     """Iterator over OAI records/identifiers/sets transparently aggregated via
     OAI-PMH.
 
@@ -293,7 +283,6 @@ class BaseOAIIterator(object):
 
 
 class OAIResponseIterator(BaseOAIIterator):
-
     """Iterator over OAI responses."""
 
     def next(self):
@@ -310,7 +299,6 @@ class OAIResponseIterator(BaseOAIIterator):
 
 
 class OAIItemIterator(BaseOAIIterator):
-
     """Iterator over OAI records/identifiers/sets transparently aggregated via
     OAI-PMH.
 

@@ -20,13 +20,15 @@ def get_namespace(element):
     return re.search('(\{.*\})', element.tag).group(1)
 
 
-def xml_to_dict(tree, paths=['.//'], nsmap={}, strip_ns=False):
+def xml_to_dict(tree, paths=None, nsmap=None, strip_ns=False):
     """Convert an XML tree to a dictionary.
 
     :param paths: An optional list of XPath expressions applied on the XML tree.
     :param nsmap: An optional prefix-namespace mapping for conciser spec of paths.
     :param strip_ns: Flag for whether to remove the namespaces from the tags.
     """
+    paths = paths or ['.//']
+    nsmap = nsmap or {}
     fields = defaultdict(list)
     for path in paths:
         elements = tree.findall(path, nsmap)

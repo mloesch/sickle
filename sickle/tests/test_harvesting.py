@@ -4,21 +4,24 @@
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
 import os
+import unittest
+
+from lxml import etree
+
+from nose.tools import raises
+import mock
 
 from sickle import Sickle, OAIResponse
-from sickle.oaiexceptions import BadArgument, CannotDisseminateFormat,\
+from sickle.oaiexceptions import BadArgument, CannotDisseminateFormat, \
     IdDoesNotExist, NoSetHierarchy, BadResumptionToken, NoRecordsMatch, OAIError
-from nose.tools import assert_raises, assert_true, raises
 
-import unittest
-import mock
 
 this_dir, this_filename = os.path.split(__file__)
 
 
 class FakeResponse(object):
-
     """Mimics the response object returned by HTTP requests."""
+
     def __init__(self, text):
         # request's response object carry an attribute 'text' which contains
         # the server's response data encoded as unicode.
@@ -65,21 +68,20 @@ def fake_harvest(*args, **kwargs):
 
 
 class TestCase(unittest.TestCase):
-
     def setUp(self):
         mock.patch('sickle.app.Sickle.harvest', fake_harvest).start()
-        self.sickle = Sickle('fake_url')
+        self.sickle = Sickle('http://localhost')
 
     def test_OAIResponse(self):
         response = self.sickle.harvest(verb='ListRecords', metadataPrefix='oai_dc')
-        response.xml
-        response.raw
+        self.assertIsInstance(response.xml, etree._Element)
+        self.assertIsInstance(response.raw, basestring)
 
     def test_broken_XML(self):
         response = self.sickle.harvest(
             verb='ListRecords', resumptionToken='ListRecordsBroken.xml')
-        response.xml
-        response.raw
+        self.assertEqual(response.xml, None)
+        self.assertIsInstance(response.raw, basestring)
 
     def test_ListRecords(self):
         records = self.sickle.ListRecords(metadataPrefix='oai_dc')
@@ -91,20 +93,17 @@ class TestCase(unittest.TestCase):
         num_records = len([r for r in records])
         assert num_records == 4
 
-
     def test_ListSets(self):
-
-        sets = self.sickle.ListSets()
-        num_sets = len([s for s in sets])
-        assert num_sets == 131
-        dict(s)
+        set_iterator = self.sickle.ListSets()
+        sets = [s for s in set_iterator]
+        self.assertEqual(131, len(sets))
+        dict(sets[0])
 
     def test_ListMetadataFormats(self):
-        mdfs = self.sickle.ListMetadataFormats()
-        num_mdfs = len([mdf for mdf in mdfs])
-        assert num_mdfs == 5
-
-        dict(mdf)
+        mdf_iterator = self.sickle.ListMetadataFormats()
+        mdfs = [mdf for mdf in mdf_iterator]
+        self.assertEqual(5, len(mdfs))
+        dict(mdfs[0])
 
     def test_ListIdentifiers(self):
         records = self.sickle.ListIdentifiers(metadataPrefix='oai_dc')
@@ -113,10 +112,9 @@ class TestCase(unittest.TestCase):
     def test_ListIdentifiers_ignore_deleted(self):
         records = self.sickle.ListIdentifiers(
             metadataPrefix='oai_dc', ignore_deleted=True)
-            # There are 2 deleted headers in the test data
+        # There are 2 deleted headers in the test data
         num_records = len([r for r in records])
         assert num_records == 2
-
 
     def test_Identify(self):
         identify = self.sickle.Identify()
@@ -136,7 +134,7 @@ class TestCase(unittest.TestCase):
         record = self.sickle.GetRecord(identifier=oai_id)
         assert record.header.identifier == oai_id
         assert oai_id in record.raw
-        record.xml
+        self.assertIsInstance(record.xml, etree._Element)
         str(record)
         unicode(record)
         dict(record.header)
@@ -146,41 +144,40 @@ class TestCase(unittest.TestCase):
 
     @raises(BadArgument)
     def test_badArgument(self):
-        records = self.sickle.ListRecords(metadataPrefix='oai_dc',
-            error='badArgument')
+        self.sickle.ListRecords(metadataPrefix='oai_dc',
+                                          error='badArgument')
 
     @raises(CannotDisseminateFormat)
     def test_cannotDisseminateFormat(self):
-        records = self.sickle.ListRecords(
+        self.sickle.ListRecords(
             metadataPrefix='oai_dc', error='cannotDisseminateFormat')
 
     @raises(IdDoesNotExist)
     def test_idDoesNotExist(self):
-        records = self.sickle.GetRecord(
+        self.sickle.GetRecord(
             metadataPrefix='oai_dc', error='idDoesNotExist')
 
     @raises(NoSetHierarchy)
-    def test_idDoesNotExist(self):
-        records = self.sickle.ListSets(
+    def test_noSetHierarchy(self):
+        self.sickle.ListSets(
             metadataPrefix='oai_dc', error='noSetHierarchy')
 
 
     @raises(BadResumptionToken)
     def test_badResumptionToken(self):
-        records = self.sickle.ListRecords(
+        self.sickle.ListRecords(
             metadataPrefix='oai_dc', error='badResumptionToken')
 
     @raises(NoRecordsMatch)
     def test_noRecordsMatch(self):
-        records = self.sickle.ListRecords(
+        self.sickle.ListRecords(
             metadataPrefix='oai_dc', error='noRecordsMatch')
 
     @raises(OAIError)
     def test_undefined_OAI_error_XML(self):
-        records = self.sickle.ListRecords(
+        self.sickle.ListRecords(
             metadataPrefix='oai_dc', error='undefinedError')
 
-    @mock.patch('sickle.app.Sickle.harvest', fake_harvest)
     def test_OAIResponseIterator(self):
         sickle = Sickle('fake_url', rtype='response')
         records = [r for r in sickle.ListRecords(metadataPrefix='oai_dc')]

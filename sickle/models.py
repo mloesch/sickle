@@ -9,29 +9,31 @@
 """
 
 from lxml import etree
+
 from .utils import get_namespace, xml_to_dict
 
 
 class ResumptionToken(object):
-
     """Represents a resumption token."""
+
     def __init__(self, token='', cursor='', complete_list_size='', expiration_date=''):
         self.token = token
         self.cursor = cursor
         self.complete_list_size = complete_list_size
+        self.expiration_date = expiration_date
 
     def __repr__(self):
         return '<ResumptionToken %s>' % self.token
 
 
 class OAIItem(object):
-
     """A generic OAI item.
 
     :param xml: XML representation of the entity.
     :param strip_ns: Flag for whether to remove the namespaces from the
                      element names in the dictionary representation.
     """
+
     def __init__(self, xml, strip_ns=True):
         super(OAIItem, self).__init__()
 
@@ -53,7 +55,6 @@ class OAIItem(object):
 
 
 class Identify(OAIItem):
-
     """Represents an Identify container.
 
     This object differs from the other entities in that is has to be created
@@ -62,6 +63,7 @@ class Identify(OAIItem):
     :param identify_response: The response for an Identify request.
     :type identify_response: :class:`sickle.app.OAIResponse`
     """
+
     def __init__(self, identify_response):
         super(Identify, self).__init__(identify_response.xml, strip_ns=True)
         self.xml = self.xml.find('.//' + self._oai_namespace + 'Identify')
@@ -77,11 +79,11 @@ class Identify(OAIItem):
 
 
 class Header(OAIItem):
-
     """Represents an OAI Header.
 
     :param header_element: The XML element 'header'.
     """
+
     def __init__(self, header_element):
         super(Header, self).__init__(header_element, strip_ns=True)
         self.deleted = self.xml.attrib.get('status') == 'deleted'
@@ -107,13 +109,13 @@ class Header(OAIItem):
 
 
 class Record(OAIItem):
-
     """Represents an OAI record.
 
     :param record_element: The XML element 'record'.
     :param strip_ns: Flag for whether to remove the namespaces from the
                      element names.
     """
+
     def __init__(self, record_element, strip_ns=True):
         super(Record, self).__init__(record_element, strip_ns=strip_ns)
         self.header = Header(self.xml.find(
@@ -139,11 +141,11 @@ class Record(OAIItem):
 
 
 class Set(OAIItem):
-
     """Represents an OAI set.
 
     :param set_element: The XML element 'set'.
     """
+
     def __init__(self, set_element):
         super(Set, self).__init__(set_element, strip_ns=True)
         self._set_dict = xml_to_dict(self.xml, strip_ns=True)
@@ -158,11 +160,11 @@ class Set(OAIItem):
 
 
 class MetadataFormat(OAIItem):
-
     """Represents an OAI MetadataFormat.
 
     :param mdf_element: The XML element 'metadataFormat'.
     """
+
     def __init__(self, mdf_element):
         super(MetadataFormat, self).__init__(mdf_element, strip_ns=True)
         #: The prefix of this format.
