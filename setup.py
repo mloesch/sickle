@@ -28,6 +28,7 @@ setup(
         'Programming Language :: Python :: 2.7',
         'Topic :: Text Processing :: Markup :: XML',
     ],
+    test_suite = "sickle.tests",
     keywords="oai oai-pmh",
     zip_safe=False,
 )
