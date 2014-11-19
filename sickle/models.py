@@ -9,7 +9,7 @@
 """
 
 from lxml import etree
-from .utils import get_namespace, xml_to_dict, xml_to_nested_dict
+from .utils import get_namespace, xml_to_dict
 
 
 class ResumptionToken(object):
