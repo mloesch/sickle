@@ -9,7 +9,7 @@
 """
 
 from lxml import etree
-from .utils import get_namespace, xml_to_dict
+from .utils import get_namespace, xml_to_dict, xml_to_nested_dict
 
 
 class ResumptionToken(object):
@@ -127,6 +127,13 @@ class Record(OAIItem):
                 self.xml.find(
                     './/' + self._oai_namespace + 'metadata'
                 ).getchildren()[0], strip_ns=self._strip_ns)
+
+            # identify optional 'about' section
+            self.about = None
+            about_node = self.xml.find('.//' + self._oai_namespace + 'about')
+            if about_node is not None:
+                self.about = xml_to_nested_dict(
+                    about_node, strip_ns=self._strip_ns)
 
     def __repr__(self):
         if self.header.deleted:
