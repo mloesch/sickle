@@ -17,7 +17,7 @@ def get_namespace(element):
 
     :param element: An XML element.
     """
-    return re.search('(\{.*\})', element.tag).group(1)
+    return re.search(r'(\{.*\})', element.tag).group(1)
 
 
 def xml_to_dict(tree, paths=['.//'], nsmap={}, strip_ns=False):
@@ -43,13 +43,13 @@ def xml_to_nested_dict(tree, strip_ns=False):
     :param strip_ns: Flag for whether to remove the namespaces from the tags.
     """
     fields = {}
-    for n in tree.findall('./'):
+    for node in tree.findall('./'):
         # strip out namespace if required
-        tag = re.sub(r'\{.*\}', '', n.tag) if strip_ns else n.tag
+        tag = re.sub(r'\{.*\}', '', node.tag) if strip_ns else node.tag
 
         # fetch correct content, recursive if nested elements, text if not.
-        content = n.text if n.text is not None else xml_to_nested_dict(
-            n, strip_ns=strip_ns)
+        content = node.text if node.text is not None else xml_to_nested_dict(
+            node, strip_ns=strip_ns)
 
         # if there are multiple elements with the same tag, coernce them into
         # a list
