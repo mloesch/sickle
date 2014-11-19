@@ -72,8 +72,8 @@ class Sickle(object):
     :param timeout: Timeout for HTTP requests.
     :type timeout: int
     :type protocol_version: str
-    :param class_mapping: A dictionary that maps OAI verbs to classes representing
-                          OAI items. If not provided,
+    :param class_mapping: A dictionary that maps OAI verbs to classes
+                          representing OAI items. If not provided,
                           :data:`sickle.app.DEFAULT_CLASS_MAPPING` will be used.
     :type class_mapping: dict
     :param auth: An optional tuple ('username', 'password')
@@ -111,17 +111,24 @@ class Sickle(object):
         for _ in xrange(self.max_retries):
             if self.http_method == 'GET':
                 http_response = requests.get(self.endpoint, params=kwargs,
-                                             timeout=self.timeout, auth=self.auth)
+                                             timeout=self.timeout,
+                                             auth=self.auth)
             else:
                 http_response = requests.post(self.endpoint, data=kwargs,
-                                              timeout=self.timeout, auth=self.auth)
-            if http_response.status_code == 503:
+                                              timeout=self.timeout,
+                                              auth=self.auth)
+
+            # Although the OAI-PMH standard only gives the example of status
+            # code 503 for retrying requests, in the wild we also see other
+            # HTTP errors where retrying is a solid strategy.
+            if http_response.status_code in [503, 500, 502]:
                 try:
                     retry_after = int(http_response.headers.get('retry-after'))
                 except TypeError:
                     retry_after = 20
                 logger.info(
-                    "Status code 503. Waiting %d seconds ... " % retry_after)
+                    "Status code %d. Waiting %d seconds ... " % (
+                        http_response.status_code, retry_after))
                 time.sleep(retry_after)
             else:
                 http_response.raise_for_status()
