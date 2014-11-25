@@ -280,7 +280,7 @@ class BaseOAIIterator(object):
         """Get the next response from the OAI server."""
         params = self.params
         if self.resumption_token:
-            params['resumptionToken'] = self.resumption_token.token
+            params = {'resumptionToken': self.resumption_token.token}
         self.oai_response = self.sickle.harvest(**params)
         error = self.oai_response.xml.find(
             './/' + self.sickle.oai_namespace + 'error')
