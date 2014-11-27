@@ -17,7 +17,7 @@ def get_namespace(element):
 
     :param element: An XML element.
     """
-    return re.search('(\{.*\})', element.tag).group(1)
+    return re.search(r'(\{.*\})', element.tag).group(1)
 
 
 def xml_to_dict(tree, paths=['.//'], nsmap={}, strip_ns=False):

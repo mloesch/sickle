@@ -23,6 +23,22 @@
                     <dc:type>text</dc:type>
                 </oai_dc:dc>
             </metadata>
+            <about>
+                <provenance xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/provenance http://www.openarchives.org/OAI/2.0/provenance.xsd">
+                    <originDescription harvestDate="2011-08-11T04:15:35Z" altered="false">
+                        <baseURL>http://svr2.example.com/OAIInterface</baseURL>
+                        <identifier>100073</identifier>
+                        <datestamp>2010-10-12</datestamp>
+                        <metadataNamespace>http://www.openarchives.org/OAI/2.0/oai_dc/</metadataNamespace>
+                        <originDescription harvestDate="2010-10-10T06:15:53Z" altered="false">
+                            <baseURL>http://svr1.example.com/OAIInterface</baseURL>
+                            <identifier>100073</identifier>
+                            <datestamp>2006-01-04T02:49:54Z</datestamp>
+                            <metadataNamespace>http://www.openarchives.org/OAI/2.0/oai_dc/</metadataNamespace>
+                        </originDescription>
+                    </originDescription>
+                </provenance>
+            </about>
         </record>
     </GetRecord>
 </OAI-PMH>

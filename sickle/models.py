@@ -15,10 +15,12 @@ from .utils import get_namespace, xml_to_dict
 class ResumptionToken(object):
 
     """Represents a resumption token."""
-    def __init__(self, token='', cursor='', complete_list_size='', expiration_date=''):
+    def __init__(self, token='', cursor='', complete_list_size='',
+                 expiration_date=''):
         self.token = token
         self.cursor = cursor
         self.complete_list_size = complete_list_size
+        self.expiration_date = expiration_date
 
     def __repr__(self):
         return '<ResumptionToken %s>' % self.token
@@ -128,6 +130,14 @@ class Record(OAIItem):
                     './/' + self._oai_namespace + 'metadata'
                 ).getchildren()[0], strip_ns=self._strip_ns)
 
+            # identify optional 'provenance/originDescription' component
+            self.origin = None
+            orig_node = self.xml.find('.//' + self._oai_namespace + 'about/' +
+                                      self._oai_namespace + 'provenance/' +
+                                      self._oai_namespace + 'originDescription')
+            if orig_node is not None:
+                self.origin = OriginDescription(orig_node)
+
     def __repr__(self):
         if self.header.deleted:
             return '<Record %s [deleted]>' % self.header.identifier
@@ -136,7 +146,6 @@ class Record(OAIItem):
 
     def __iter__(self):
         return self.metadata.iteritems()
-
 
 class Set(OAIItem):
 
@@ -156,7 +165,6 @@ class Set(OAIItem):
     def __iter__(self):
         return self._set_dict.iteritems()
 
-
 class MetadataFormat(OAIItem):
 
     """Represents an OAI MetadataFormat.
@@ -175,3 +183,38 @@ class MetadataFormat(OAIItem):
 
     def __iter__(self):
         return self._mdf_dict.iteritems()
+
+class OriginDescription(OAIItem):
+
+    """Represents an OAI OriginDescription item as part of the optional
+    provenence node.
+    """
+
+    def __init__(self, od_node):
+        super(OriginDescription, self).__init__(od_node, strip_ns=True)
+        self.altered = self.xml.attrib.get('altered') == 'true'
+        self.harvest_date = self.xml.attrib.get('harvestDate')
+        self.base_url = self.xml.find(self._oai_namespace + 'baseURL').text
+        self.identifier = self.xml.find(self._oai_namespace + 'identifier').text
+        self.datestamp = self.xml.find(self._oai_namespace + 'datestamp').text
+        self.metadata_namespace = self.xml.find(self._oai_namespace + 'metadataNamespace').text
+
+        self.origin = None
+        sub_node = self.xml.find(self._oai_namespace + 'originDescription')
+        if sub_node is not None:
+            self.origin = OriginDescription(sub_node)
+
+    def __repr__(self):
+        if self.origin is not None:
+            return '<OriginDescription %s from %r>' % (self.base_url, self.origin)
+        else:
+            return '<OriginDescription %s>' % self.base_url
+
+    def __iter__(self):
+        return iter([
+            ('base_url', self.base_url),
+            ('harvest_date', self.harvest_date),
+            ('altered', self.altered),
+            ('identifier', self.identifier),
+            ('origin', self.origin)
+        ])
