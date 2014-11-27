@@ -22,7 +22,7 @@ setup(
         'requests>=1.1.0',
         'lxml>=3.2.3'],
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Alpha',
         'License :: OSI Approved :: BSD License',
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
