@@ -45,9 +45,6 @@ class BaseOAIIterator(object):
         self.resumption_token = None
         self._next_response()
 
-    def __call__(self, *args, **kwargs):
-        self.__init__(*args, **kwargs)
-
     def __iter__(self):
         return self
 

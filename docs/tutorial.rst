@@ -22,23 +22,24 @@ example, we use the OAI interface of the ELIS repository::
 Issuing Requests
 ================
 
-Now you are set to issue some requests. Sickle provides methods for each of
-the six OAI verbs (ListRecords, GetRecord, Idenitfy, ListSets, ListMetadataFormats,
-ListIdentifiers). Start with a ListRecords request::
+Sickle provides methods for each of the six OAI verbs (ListRecords, GetRecord,
+Idenitfy, ListSets, ListMetadataFormats, ListIdentifiers). Start with a
+ListRecords request::
 
     >>> records = sickle.ListRecords(metadataPrefix='oai_dc')
 
 Note that all keyword arguments you provide to this function are passed to the OAI interface
-as HTTP parameters. Therefore our example request results in ``verb=ListRecords&metadataPrefix=oai_dc``.
-Consequently, we can add additional parameters, like ``set`` for example::
+as HTTP parameters. Therefore the example request would send the parameters
+``verb=ListRecords&metadataPrefix=oai_dc``.
+We can add additional parameters, like, for example, an OAI ``set``::
 
     >>> records = sickle.ListRecords(metadataPrefix='oai_dc', set='driver')
 
 Consecutive Harvesting
 ======================
 
-Since most OAI verbs yield more than one element, the respective Sickle methods
-return iterator objects which can be used to iterate through the records of a
+Since most OAI verbs yield more than one element, their respective Sickle methods
+return iterator objects which can be used to iterate over the records of a
 repository::
 
     >>> records = sickle.ListRecords(metadataPrefix='oai_dc')
@@ -61,21 +62,6 @@ Iterating over the the sets returned by ``ListSets`` works similarly::
     >>> sets.next()
     <Set Status = In Press>
 
-
-Harvesting OAI Items vs. OAI Responses
-======================================
-
-Sickle supports two harvesting modes that differ in the type of the harvested
-objects. The default mode returns OAI-specific *items* (records, headers etc.)
-encoded as Python objects as seen before. If you want to save the whole XML
-response returned by the server, you have to pass the
-:class:`sickle.iterator.OAIResponseIterator` during the instantiation of the
-:class:`~sickle.app.Sickle` object::
-
-    >>> sickle = Sickle('http://elis.da.ulcc.ac.uk/cgi/oai2', iterator=OAIResponseIterator)
-    >>> responses = Sickle.ListRecords(metadataPrefix='oai_dc')
-    >>> responses.next()
-    <OAIResponse ListRecords>
 
 Using the ``from`` Parameter
 ============================
@@ -108,18 +94,40 @@ OAI-PMH allows you to get a single record by using the ``GetRecord`` verb::
     <Record oai:eprints.rclis.org:4088>
 
 
+Harvesting OAI Items vs. OAI Responses
+======================================
+
+Sickle supports two harvesting modes that differ in the type of the returned
+objects. The default mode returns OAI-specific *items* (records, headers etc.)
+encoded as Python objects as seen earlier. If you want to save the whole XML
+response returned by the server, you have to pass the
+:class:`sickle.iterator.OAIResponseIterator` during the instantiation of the
+:class:`~sickle.app.Sickle` object::
+
+    >>> sickle = Sickle('http://elis.da.ulcc.ac.uk/cgi/oai2', iterator=OAIResponseIterator)
+    >>> responses = Sickle.ListRecords(metadataPrefix='oai_dc')
+    >>> responses.next()
+    <OAIResponse ListRecords>
+
+You could then save the returned responses to disk::
+
+    >>> with open('response.xml', 'w') as fp:
+    ...     fp.write(responses.next().raw.encode('utf8'))
+
+
+
 Ignoring Deleted Records
 ========================
 
 The :meth:`~sickle.app.Sickle.ListRecords` and :meth:`~sickle.app.Sickle.ListIdentifiers`
-methods accept an optional parameter :attr:`ignore_deleted`. If it is set to :obj:`True`,
+methods accept an optional parameter :attr:`ignore_deleted`. If set to :obj:`True`,
 the returned :class:`~sickle.iterator.OAIItemIterator` will skip deleted records/headers::
 
     >>> records = sickle.ListRecords(metadataPrefix='oai_dc', ignore_deleted=True)
 
 .. note::
 
-    This works only using the :class:`sickle.iterator.OAIItemIterator` for
-    harvesting. If you use the :class:`sickle.iterator.OAIResponseIterator`,
-    the resulting OAI responses will still contain the deleted records.
+    This works only using the :class:`sickle.iterator.OAIItemIterator`. If you
+    use the :class:`sickle.iterator.OAIResponseIterator`, the resulting OAI
+    responses will still contain the deleted records.
 

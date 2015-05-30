@@ -72,6 +72,10 @@ The following classes represent OAI-specific items like records, headers, and se
 All items feature the attributes :attr:`raw` and :attr:`xml` which contain their
 original XML representation as unicode and as parsed XML objects.
 
+.. note::
+
+    Sickle's automatic mapping of XML to OAI objects only works for Dublin Core
+    encoded record data.
 
 Identify Object
 ---------------
