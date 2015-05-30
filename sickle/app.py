@@ -7,7 +7,7 @@
 
     :copyright: Copright 2013 Mathias Loesch
 """
-
+import inspect
 import time
 import logging
 
@@ -78,11 +78,11 @@ class Sickle(object):
                 "Invalid protocol version: %s! Must be 1.0 or 2.0.")
         self.http_method = http_method
         self.protocol_version = protocol_version
-        if issubclass(iterator, BaseOAIIterator):
+        if inspect.isclass(iterator) and issubclass(iterator, BaseOAIIterator):
             self.iterator = iterator
         else:
             raise TypeError(
-                "Argument 'iterator' must be subclass of %s" % BaseOAIIterator)
+                "Argument 'iterator' must be subclass of %s" % BaseOAIIterator.__name__)
         self.max_retries = max_retries
         self.timeout = timeout
         self.oai_namespace = OAI_NAMESPACE % self.protocol_version
