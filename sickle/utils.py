@@ -23,9 +23,14 @@ def get_namespace(element):
 def xml_to_dict(tree, paths=None, nsmap=None, strip_ns=False):
     """Convert an XML tree to a dictionary.
 
+    :param tree: etree Element
+    :type tree: :class:`lxml.etree._Element`
     :param paths: An optional list of XPath expressions applied on the XML tree.
+    :type paths: list[basestring]
     :param nsmap: An optional prefix-namespace mapping for conciser spec of paths.
+    :type nsmap: dict
     :param strip_ns: Flag for whether to remove the namespaces from the tags.
+    :type strip_ns: bool
     """
     paths = paths or ['.//']
     nsmap = nsmap or {}
