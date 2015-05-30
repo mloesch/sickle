@@ -58,10 +58,10 @@ class Identify(OAIItem):
     """Represents an Identify container.
 
     This object differs from the other entities in that is has to be created
-    from a :class:`sickle.app.OAIResponse` instead of an XML element.
+    from a :class:`sickle.response.OAIResponse` instead of an XML element.
 
     :param identify_response: The response for an Identify request.
-    :type identify_response: :class:`sickle.app.OAIResponse`
+    :type identify_response: :class:`sickle.OAIResponse`
     """
 
     def __init__(self, identify_response):

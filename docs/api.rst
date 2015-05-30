@@ -18,15 +18,15 @@ The Sickle Client
 Working with OAI Responses
 ==========================
 
-.. autoclass:: sickle.app.OAIResponse
+.. autoclass:: sickle.response.OAIResponse
     :members:
 
 
-Iterating through OAI Items
-===========================
+Iterating over OAI Items
+========================
 
 
-.. autoclass:: sickle.app.OAIItemIterator
+.. autoclass:: sickle.iterator.OAIItemIterator
     :members:
 
     .. attribute oai_response
@@ -53,6 +53,15 @@ Iterating through OAI Items
     .. attribute:: ignore_deleted
 
         Flag for whether to skip records marked as deleted.
+
+
+
+Iterating over OAI Responses
+============================
+
+
+.. autoclass:: sickle.iterator.OAIResponseIterator
+    :members:
 
 
 

@@ -65,37 +65,23 @@ Iterating over the the sets returned by ``ListSets`` works similarly::
 Harvesting OAI Items vs. OAI Responses
 ======================================
 
-Sickle supports two harvesting modes, ``item`` and ``response`` that differ in the
-type of the returned objects. While the ``item`` mode returns OAI-specific *items*
-(records, headers etc.) encoded as Python objects, the ``response`` mode returns
-:class:`sickle.app.OAIResponse` objects that encode complete OAI-PMH responses.
-The harvesting mode can be selected during the instantiation of the
-:class:`sickle.app.Sickle` object. For harvesting items, use::
+Sickle supports two harvesting modes that differ in the type of the harvested
+objects. The default mode returns OAI-specific *items* (records, headers etc.)
+encoded as Python objects as seen before. If you want to save the whole XML
+response returned by the server, you have to pass the
+:class:`sickle.iterator.OAIResponseIterator` during the instantiation of the
+:class:`~sickle.app.Sickle` object::
 
-    >>> sickle = Sickle('http://elis.da.ulcc.ac.uk/cgi/oai2', rtype='item')
-    >>> records = Sickle.ListRecords(metadataPrefix='oai_dc')
-    >>> records.next()
-    <Record ...>
-
-Harvesting responses works like this::
-
-    >>> sickle = Sickle('http://elis.da.ulcc.ac.uk/cgi/oai2', rtype='response')
+    >>> sickle = Sickle('http://elis.da.ulcc.ac.uk/cgi/oai2', iterator=OAIResponseIterator)
     >>> responses = Sickle.ListRecords(metadataPrefix='oai_dc')
     >>> responses.next()
     <OAIResponse ListRecords>
-
-.. note:: The default response type is ``item``.
-
-Which mode to use depends on your use case: If you want to work directly with the *contents* of the repository, e.g., the metadata payloads of single records, you should use item mode harvesting. Conversely, if you want to *store* the complete XML responses of a repository
-for later use (e.g., indexing for a search application), you may want to use the response
-harvesting mode.
-
 
 Using the ``from`` Parameter
 ============================
 
 If you need to perform selective harvesting by date using the ``from`` parameter, you
-will run into problems though, since ``from`` is a reserved word in Python::
+may face the problem that ``from`` is a reserved word in Python::
 
     >>> records = sickle.ListRecords(metadataPrefix='oai_dc', from="2012-12-12")
       File "<stdin>", line 1
@@ -127,12 +113,13 @@ Ignoring Deleted Records
 
 The :meth:`~sickle.app.Sickle.ListRecords` and :meth:`~sickle.app.Sickle.ListIdentifiers`
 methods accept an optional parameter :attr:`ignore_deleted`. If it is set to :obj:`True`,
-the returned :class:`~sickle.app.OAIItemIterator` will skip deleted records/headers::
+the returned :class:`~sickle.iterator.OAIItemIterator` will skip deleted records/headers::
 
     >>> records = sickle.ListRecords(metadataPrefix='oai_dc', ignore_deleted=True)
 
 .. note::
 
-    This works only in ``item`` mode harvesting. In ``response`` mode, the resulting
-    OAI responses will still contain the deleted records.
+    This works only using the :class:`sickle.iterator.OAIItemIterator` for
+    harvesting. If you use the :class:`sickle.iterator.OAIResponseIterator`,
+    the resulting OAI responses will still contain the deleted records.
 

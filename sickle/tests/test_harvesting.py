@@ -7,14 +7,13 @@ import os
 import unittest
 
 from lxml import etree
-
 from nose.tools import raises
 import mock
 
 from sickle import Sickle, OAIResponse
+from sickle.iterator import OAIResponseIterator
 from sickle.oaiexceptions import BadArgument, CannotDisseminateFormat, \
     IdDoesNotExist, NoSetHierarchy, BadResumptionToken, NoRecordsMatch, OAIError
-
 
 this_dir, this_filename = os.path.split(__file__)
 
@@ -50,7 +49,7 @@ def fake_harvest(*args, **kwargs):
 
     :param kwargs: OAI arguments that would normally be passed to
                    :meth:`sickle.app.Sickle.harvest`.
-    :rtype: :class:`sickle.app.OAIResponse`.
+    :rtype: :class:`sickle.response.OAIResponse`.
     """
     verb = kwargs.get('verb')
     resumption_token = kwargs.get('resumptionToken')
@@ -62,7 +61,8 @@ def fake_harvest(*args, **kwargs):
     else:
         filename = '%s.xml' % verb
     response = FakeResponse(open(
-        os.path.join(this_dir, 'sample_data', filename), 'r').read().decode('utf8'))
+        os.path.join(this_dir, 'sample_data', filename), 'r').read().decode(
+        'utf8'))
 
     return OAIResponse(response, kwargs)
 
@@ -73,7 +73,8 @@ class TestCase(unittest.TestCase):
         self.sickle = Sickle('http://localhost')
 
     def test_OAIResponse(self):
-        response = self.sickle.harvest(verb='ListRecords', metadataPrefix='oai_dc')
+        response = self.sickle.harvest(verb='ListRecords',
+                                       metadataPrefix='oai_dc')
         self.assertIsInstance(response.xml, etree._Element)
         self.assertIsInstance(response.raw, basestring)
 
@@ -88,7 +89,8 @@ class TestCase(unittest.TestCase):
         assert len([r for r in records]) == 8
 
     def test_ListRecords_ignore_deleted(self):
-        records = self.sickle.ListRecords(metadataPrefix='oai_dc', ignore_deleted=True)
+        records = self.sickle.ListRecords(metadataPrefix='oai_dc',
+                                          ignore_deleted=True)
         # There are twelve deleted records in the test data
         num_records = len([r for r in records])
         assert num_records == 4
@@ -145,7 +147,7 @@ class TestCase(unittest.TestCase):
     @raises(BadArgument)
     def test_badArgument(self):
         self.sickle.ListRecords(metadataPrefix='oai_dc',
-                                          error='badArgument')
+                                error='badArgument')
 
     @raises(CannotDisseminateFormat)
     def test_cannotDisseminateFormat(self):
@@ -161,7 +163,6 @@ class TestCase(unittest.TestCase):
     def test_noSetHierarchy(self):
         self.sickle.ListSets(
             metadataPrefix='oai_dc', error='noSetHierarchy')
-
 
     @raises(BadResumptionToken)
     def test_badResumptionToken(self):
@@ -179,6 +180,6 @@ class TestCase(unittest.TestCase):
             metadataPrefix='oai_dc', error='undefinedError')
 
     def test_OAIResponseIterator(self):
-        sickle = Sickle('fake_url', rtype='response')
+        sickle = Sickle('fake_url', iterator=OAIResponseIterator)
         records = [r for r in sickle.ListRecords(metadataPrefix='oai_dc')]
         assert len(records) == 4
