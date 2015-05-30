@@ -9,7 +9,6 @@ setup(
     url='http://github.com/mloesch/sickle',
     license='BSD',
     author='Mathias Loesch',
-    author_email='mathias.loesch@uni-bielefeld.de',
     description='A lightweight OAI client library for Python',
     long_description=open('README.rst').read() + '\n\n' +
     open('CHANGES.rst').read(),
