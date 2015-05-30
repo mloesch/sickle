@@ -7,6 +7,7 @@ import os
 import unittest
 
 from lxml import etree
+
 from nose.tools import raises
 import mock
 
@@ -18,7 +19,7 @@ from sickle.oaiexceptions import BadArgument, CannotDisseminateFormat, \
 this_dir, this_filename = os.path.split(__file__)
 
 
-class FakeResponse(object):
+class MockResponse(object):
     """Mimics the response object returned by HTTP requests."""
 
     def __init__(self, text):
@@ -60,7 +61,7 @@ def fake_harvest(*args, **kwargs):
         filename = '%s.xml' % error
     else:
         filename = '%s.xml' % verb
-    response = FakeResponse(open(
+    response = MockResponse(open(
         os.path.join(this_dir, 'sample_data', filename), 'r').read().decode(
         'utf8'))
 
@@ -91,7 +92,6 @@ class TestCase(unittest.TestCase):
     def test_ListRecords_ignore_deleted(self):
         records = self.sickle.ListRecords(metadataPrefix='oai_dc',
                                           ignore_deleted=True)
-        # There are twelve deleted records in the test data
         num_records = len([r for r in records])
         assert num_records == 4
 
