@@ -5,7 +5,7 @@
 
     Collects classes for iterating over OAI responses
 
-    :copyright: Copyright 2013 Mathias Loesch
+    :copyright: Copyright 2015 Mathias Loesch
 """
 
 from sickle import oaiexceptions

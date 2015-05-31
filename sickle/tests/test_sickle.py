@@ -2,6 +2,8 @@
 """
     sickle.tests.test_sickle
     ~~~~~~~~~~~~~~~~~~~~~~~~
+
+    :copyright: Copyright 2015 Mathias Loesch
 """
 import os
 import unittest

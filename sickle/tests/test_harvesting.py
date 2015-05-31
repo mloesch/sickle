@@ -2,6 +2,8 @@
 """
     sickle.tests.test_harvesting
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    :copyright: Copyright 2015 Mathias Loesch
 """
 import os
 import unittest
@@ -10,7 +12,8 @@ from lxml import etree
 from nose.tools import raises
 import mock
 
-from sickle import Sickle, OAIResponse
+from sickle import Sickle
+from sickle.response import OAIResponse
 from sickle.iterator import OAIResponseIterator
 from sickle.oaiexceptions import BadArgument, CannotDisseminateFormat, \
     IdDoesNotExist, NoSetHierarchy, BadResumptionToken, NoRecordsMatch, OAIError

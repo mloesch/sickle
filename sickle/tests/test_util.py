@@ -1,3 +1,10 @@
+# coding: utf-8
+"""
+    sickle.tests.test_util
+    ~~~~~~~~~~~~~~~~~~~~~~
+
+    :copyright: Copyright 2015 Mathias Loesch
+"""
 from unittest import TestCase
 
 from lxml import etree

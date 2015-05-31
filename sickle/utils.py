@@ -5,7 +5,7 @@
 
     Collects utility functions.
 
-    :copyright: Copright 2013 Mathias Loesch
+    :copyright: Copyright 2015 Mathias Loesch
 """
 
 import re
