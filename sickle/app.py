@@ -51,7 +51,7 @@ class Sickle(object):
     :param protocol_version: The OAI protocol version.
     :type protocol_version: str
     :param iterator: The type of the returned iterator
-    :type iterator: :class:`sickle.iterator.BaseOAIIterator`
+           (default: :class:`sickle.iterator.OAIItemIterator`)
     :param max_retries: Number of retries if HTTP request fails.
     :type max_retries: int
     :param timeout: Timeout for HTTP requests.
@@ -125,6 +125,7 @@ class Sickle(object):
         """
         params = kwargs
         params.update({'verb': 'ListRecords'})
+        # noinspection PyCallingNonCallable
         return self.iterator(self, params, ignore_deleted=ignore_deleted)
 
     def ListIdentifiers(self, ignore_deleted=False, **kwargs):

@@ -21,3 +21,7 @@ class TestCase(unittest.TestCase):
     @raises(ValueError)
     def test_wrong_protocol_version(self):
         Sickle("http://localhost", protocol_version="3.0")
+
+    @raises(TypeError)
+    def test_invalid_iterator(self):
+        Sickle("http://localhost", iterator=None)
