@@ -5,10 +5,10 @@ Changelog
 Version 0.4
 -----------
 
-September 1, 2013
+May 31, 2015
 
-- two harvesting modes: item and response
-- 100% test coverage
+- bug fix: resumptionToken parameter is exclusive
+- added support for harvesting complete OAI-XML responses
 
 
 Version 0.3
