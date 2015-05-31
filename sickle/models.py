@@ -82,6 +82,7 @@ class Header(OAIItem):
     """Represents an OAI Header.
 
     :param header_element: The XML element 'header'.
+    :type header_element: :class:`lxml.etree._Element
     """
 
     def __init__(self, header_element):
@@ -112,6 +113,7 @@ class Record(OAIItem):
     """Represents an OAI record.
 
     :param record_element: The XML element 'record'.
+    :type record_element: :class:`lxml.etree._Element`
     :param strip_ns: Flag for whether to remove the namespaces from the
                      element names.
     """
@@ -144,6 +146,7 @@ class Set(OAIItem):
     """Represents an OAI set.
 
     :param set_element: The XML element 'set'.
+    :type set_element: :class:`lxml.etree._Element
     """
 
     def __init__(self, set_element):
@@ -153,7 +156,7 @@ class Set(OAIItem):
             setattr(self, k.replace('-', '_'), v[0])
 
     def __repr__(self):
-        return u'<Set %s>'.encode("utf8") % self.setName
+        return u'<Set %s>'.encode('utf8') % self.setName
 
     def __iter__(self):
         return self._set_dict.iteritems()
@@ -163,6 +166,7 @@ class MetadataFormat(OAIItem):
     """Represents an OAI MetadataFormat.
 
     :param mdf_element: The XML element 'metadataFormat'.
+    :type mdf_element: :class:`lxml.etree._Element
     """
 
     def __init__(self, mdf_element):
@@ -173,7 +177,7 @@ class MetadataFormat(OAIItem):
             setattr(self, k.replace('-', '_'), v[0])
 
     def __repr__(self):
-        return u'<MetadataFormat %s>'.encode("utf8") % self.metadataPrefix
+        return u'<MetadataFormat %s>'.encode('utf8') % self.metadataPrefix
 
     def __iter__(self):
         return self._mdf_dict.iteritems()
