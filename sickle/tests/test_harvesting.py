@@ -7,7 +7,6 @@ import os
 import unittest
 
 from lxml import etree
-
 from nose.tools import raises
 import mock
 

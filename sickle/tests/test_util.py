@@ -17,4 +17,5 @@ class TestUtils(TestCase):
 </root>"""
 
         self.assertEqual(xml_to_dict(etree.XML(xml)),
-                         dict(a=['One'], b=['Two'], c=['Three', 'Four'], d=[None]))
+                         dict(a=['One'], b=['Two'], c=['Three', 'Four'],
+                              d=[None]))

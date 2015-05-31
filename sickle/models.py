@@ -16,7 +16,8 @@ from .utils import get_namespace, xml_to_dict
 class ResumptionToken(object):
     """Represents a resumption token."""
 
-    def __init__(self, token='', cursor='', complete_list_size='', expiration_date=''):
+    def __init__(self, token='', cursor='', complete_list_size='',
+                 expiration_date=''):
         self.token = token
         self.cursor = cursor
         self.complete_list_size = complete_list_size
