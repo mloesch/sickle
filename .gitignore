@@ -1,5 +1,9 @@
-doc/_build
+docs/_build
 *.pyc
 build/
 dist/
+Sickle.egg-info/
 sickle.egg-info/
+coverage.xml
+.coverage*
+.idea

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/ http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">
+    <responseDate>2013-02-27T09:10:56Z</responseDate>
+    <request metadataPrefix="oai_dc" verb="ListRecords">http://test.example.com/oai</request>
+    <ListRecords>
+        <record>
+            <header status="deleted">
+                <identifier>oai:test.example.com:1585310</identifier>
+                <datestamp>2011-07-18T16:31:00Z</datestamp>
+            </header>
+        </record>
+        <record>
+            <header>
+                <identifier>oai:test.example.com:1585322</identifier>
+                <datestamp>2011-01-10T10:19:23Z</datestamp>
+            </header>
+            <metadata>
+                <oai_dc:dc xmlns:dc="http://purl.org/dc/elements/1.1/"
+                           xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/"
+                           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                           xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+                    <dc:title>Sample Title</dc:title>
+                    <dc:identifier>http://test.example.com/publication/1585322</dc:identifier>
+                    <dc:creator>John Doe</dc:creator>
+                    <dc:creator>John Doe</dc:creator>
+                    <dc:creator>John Doe</dc:creator>
+                    <dc:creator>John Doe</dc:creator>
+                    <dc:description xml:lang="eng">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
+                        eiusmod
+                        tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+                        quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+                        consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
+                        cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+                        proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+                    </dc:description>
+                    <dc:language>eng</dc:language>
+                    <dc:source>Sample Source</dc:source>(?s)
+                    <dc:publisher>
+                        Sample Publisher
+                    </dc:publisher>
+                    <dc:date>2010</dc:date>
+                    <dc:type>info:eu-repo/semantics/article</dc:type>
+                    <dc:type>doc-type:article</dc:type>
+                    <dc:type>text</dc:type>
+                </oai_dc:dc>
+            </metadata>
+        </record>
+
+        <resumptionToken completeListSize="8" cursor="0">ListRecords3.xml</resumptionToken>
+    </ListRecords>
+</OAI-PMH>

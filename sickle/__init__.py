@@ -3,12 +3,12 @@
     sickle
     ~~~~~~
 
-    An OAI-PHM client.
+    OAI-PMH for Humans.
 
-    :copyright: Copright 2013 Mathias Loesch
+    :copyright: Copyright 2015 Mathias Loesch
 """
 
-__version__ = '0.3'
+__version__ = '0.4'
 
-
-from .app import Sickle, OAIResponse
+from .app import Sickle
+from sickle.response import OAIResponse

@@ -1,15 +1,17 @@
-==================================
-Harvesting Custom Metadata Formats
-==================================
+.. _customizing:
 
-By default, Sickle's unpacking of the metadata into a Python
-dictionary is taylored to work only with Dublin-Core-encoded metadata
-payloads. Other formats most probably won't be unpacked correctly,
+=============================================
+Harvesting other Metadata Formats than OAI-DC
+=============================================
+
+By default, Sickle's mapping of the record XML into Python
+dictionaries is tailored to work only with Dublin-Core-encoded metadata
+payloads. Other formats most probably won't be mapped correctly,
 especially if they are more hierarchically structured than Dublin
 Core.
 
 In case your want to harvest these more complex formats, you have to
-write your own record model classes by subclassing the default
+write your own record model class by subclassing the default
 implementation that unpacks the metadata XML::
 
     from sickle.models import Record
