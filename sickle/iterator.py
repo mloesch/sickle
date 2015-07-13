@@ -144,7 +144,7 @@ class OAIItemIterator(BaseOAIIterator):
                 if self.ignore_deleted and mapped.deleted:
                     continue
                 return mapped
-            if self.resumption_token:
+            if self.resumption_token and self.resumption_token.token:
                 self._next_response()
             else:
                 raise StopIteration
