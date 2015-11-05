@@ -13,9 +13,10 @@ setup(
     open('CHANGES.rst').read(),
     packages=['sickle'],
     platforms='any',
-    setup_requires=[
+    test_require=[
         'nose>=1.0',
-        'mock>=1.0.1'],
+        'mock>=1.0.1'
+    ],
     install_requires=[
         'requests>=1.1.0',
         'lxml>=3.2.3'],
@@ -24,9 +25,12 @@ setup(
         'License :: OSI Approved :: BSD License',
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
         'Topic :: Text Processing :: Markup :: XML',
     ],
-    test_suite = "sickle.tests",
+    test_suite="sickle.tests",
     keywords="oai oai-pmh",
     zip_safe=False,
 )

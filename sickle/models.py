@@ -11,6 +11,7 @@
 from lxml import etree
 
 from .utils import get_namespace, xml_to_dict
+from ._compat import PY3
 
 
 class ResumptionToken(object):
@@ -43,8 +44,12 @@ class OAIItem(object):
         self._strip_ns = strip_ns
         self._oai_namespace = get_namespace(self.xml)
 
-    def __str__(self):
+
+    def __bytes__(self):
         return etree.tounicode(self.xml).encode("utf8")
+
+    def __str__(self):
+        return self.__unicode__() if PY3 else self.__bytes__()
 
     def __unicode__(self):
         return etree.tounicode(self.xml)
@@ -76,7 +81,8 @@ class Identify(OAIItem):
         return '<Identify>'
 
     def __iter__(self):
-        return self._identify_dict.iteritems()
+        return iter(self._identify_dict.items()) if PY3 else \
+            self._identify_dict.iteritems()
 
 
 class Header(OAIItem):
@@ -140,7 +146,8 @@ class Record(OAIItem):
             return '<Record %s>' % self.header.identifier
 
     def __iter__(self):
-        return self.metadata.iteritems()
+        return iter(self.metadata.items()) if PY3 else \
+            self.metadata.iteritems()
 
 
 class Set(OAIItem):
@@ -160,7 +167,8 @@ class Set(OAIItem):
         return u'<Set %s>'.encode('utf8') % self.setName
 
     def __iter__(self):
-        return self._set_dict.iteritems()
+        return iter(self._set_dict.items()) if PY3 else \
+            self._set_dict.iteritems()
 
 
 class MetadataFormat(OAIItem):
@@ -181,4 +189,5 @@ class MetadataFormat(OAIItem):
         return u'<MetadataFormat %s>'.encode('utf8') % self.metadataPrefix
 
     def __iter__(self):
-        return self._mdf_dict.iteritems()
+        return iter(self._mdf_dict.items()) if PY3 else \
+            self._mdf_dict.iteritems()
