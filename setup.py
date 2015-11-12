@@ -13,7 +13,7 @@ setup(
     open('CHANGES.rst').read(),
     packages=['sickle'],
     platforms='any',
-    test_require=[
+    tests_require=[
         'nose>=1.0',
         'mock>=1.0.1'
     ],
