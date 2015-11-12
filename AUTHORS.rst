@@ -7,3 +7,4 @@ Contributors
 ------------
 
 - Ben Meier
+- Lars Holm Nielsen

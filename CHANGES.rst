@@ -2,6 +2,15 @@ Changelog
 =========
 
 
+Version 0.5
+-----------
+
+Novemver 12, 2015
+
+- support for Python 3
+- consider resumption tokens with empty tag bodies
+
+
 Version 0.4
 -----------
 

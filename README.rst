@@ -1,14 +1,6 @@
 Sickle: OAI-PMH for Humans
 ==========================
 
-.. image:: https://pypip.in/v/Sickle/badge.png
-    :target: https://crate.io/packages/Sickle/
-    :alt: Latest PyPI version
-
-.. image:: https://pypip.in/d/Sickle/badge.png
-    :target: https://crate.io/packages/Sickle/
-    :alt: Number of PyPI downloads
-
 Sickle is a lightweight `OAI-PMH <http://www.openarchives.org/OAI/openarchivesprotocol.html>`_
 client library written in Python.  It has been designed for conveniently retrieving data from
 OAI interfaces the Pythonic way::
@@ -25,7 +17,8 @@ Features
 - Easy harvesting of OAI-compliant interfaces
 - Support for all six OAI verbs
 - Convenient object representations of OAI items (records, headers, sets, ...)
-- Automatic dictionary serialization of Dublin Core-encoded metadata payloads
+- Automatic de-serialization of Dublin Core-encoded metadata payloads to Python
+  dictionaries
 - Option for ignoring deleted items
 
 Installation

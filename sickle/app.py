@@ -95,7 +95,7 @@ class Sickle(object):
         :param kwargs: OAI HTTP parameters.
         :rtype: :class:`sickle.OAIResponse`
         """
-        for _ in xrange(self.max_retries):
+        for _ in range(self.max_retries):
             if self.http_method == 'GET':
                 http_response = requests.get(self.endpoint, params=kwargs,
                                              timeout=self.timeout,

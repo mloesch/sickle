@@ -13,10 +13,12 @@ from nose.tools import raises
 import mock
 
 from sickle import Sickle
+from sickle._compat import binary_type, string_types, text_type, to_unicode
 from sickle.response import OAIResponse
 from sickle.iterator import OAIResponseIterator
 from sickle.oaiexceptions import BadArgument, CannotDisseminateFormat, \
-    IdDoesNotExist, NoSetHierarchy, BadResumptionToken, NoRecordsMatch, OAIError
+    IdDoesNotExist, NoSetHierarchy, BadResumptionToken, NoRecordsMatch, \
+    OAIError
 
 this_dir, this_filename = os.path.split(__file__)
 
@@ -63,11 +65,10 @@ def fake_harvest(*args, **kwargs):
         filename = '%s.xml' % error
     else:
         filename = '%s.xml' % verb
-    response = MockResponse(open(
-        os.path.join(this_dir, 'sample_data', filename), 'r').read().decode(
-        'utf8'))
 
-    return OAIResponse(response, kwargs)
+    with open(os.path.join(this_dir, 'sample_data', filename), 'r') as fp:
+        response = MockResponse(to_unicode(fp.read()))
+        return OAIResponse(response, kwargs)
 
 
 class TestCase(unittest.TestCase):
@@ -79,13 +80,13 @@ class TestCase(unittest.TestCase):
         response = self.sickle.harvest(verb='ListRecords',
                                        metadataPrefix='oai_dc')
         self.assertIsInstance(response.xml, etree._Element)
-        self.assertIsInstance(response.raw, basestring)
+        self.assertIsInstance(response.raw, string_types)
 
     def test_broken_XML(self):
         response = self.sickle.harvest(
             verb='ListRecords', resumptionToken='ListRecordsBroken.xml')
         self.assertEqual(response.xml, None)
-        self.assertIsInstance(response.raw, basestring)
+        self.assertIsInstance(response.raw, string_types)
 
     def test_ListRecords(self):
         records = self.sickle.ListRecords(metadataPrefix='oai_dc')
@@ -139,8 +140,8 @@ class TestCase(unittest.TestCase):
         assert record.header.identifier == oai_id
         assert oai_id in record.raw
         self.assertIsInstance(record.xml, etree._Element)
-        str(record)
-        unicode(record)
+        binary_type(record)
+        text_type(record)
         dict(record.header)
         assert dict(record) == record.metadata
 
