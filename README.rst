@@ -17,7 +17,8 @@ Features
 - Easy harvesting of OAI-compliant interfaces
 - Support for all six OAI verbs
 - Convenient object representations of OAI items (records, headers, sets, ...)
-- Automatic dictionary serialization of Dublin Core-encoded metadata payloads
+- Automatic de-serialization of Dublin Core-encoded metadata payloads to Python
+  dictionaries
 - Option for ignoring deleted items
 
 Installation
