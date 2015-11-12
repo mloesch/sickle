@@ -89,7 +89,7 @@ class Header(OAIItem):
     """Represents an OAI Header.
 
     :param header_element: The XML element 'header'.
-    :type header_element: :class:`lxml.etree._Element
+    :type header_element: :class:`lxml.etree._Element`
     """
 
     def __init__(self, header_element):
@@ -154,7 +154,7 @@ class Set(OAIItem):
     """Represents an OAI set.
 
     :param set_element: The XML element 'set'.
-    :type set_element: :class:`lxml.etree._Element
+    :type set_element: :class:`lxml.etree._Element`
     """
 
     def __init__(self, set_element):
@@ -175,7 +175,7 @@ class MetadataFormat(OAIItem):
     """Represents an OAI MetadataFormat.
 
     :param mdf_element: The XML element 'metadataFormat'.
-    :type mdf_element: :class:`lxml.etree._Element
+    :type mdf_element: :class:`lxml.etree._Element`
     """
 
     def __init__(self, mdf_element):
