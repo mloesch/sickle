@@ -12,17 +12,17 @@ import sys
 
 PY3 = sys.version_info >= (3, 0)
 
-if PY3:
+if PY3:  # pragma: no cover
     string_types = str,
     text_type = str
     binary_type = bytes
-else:
+else:  # pragma: no cover
     string_types = basestring,
     text_type = unicode
     binary_type = str
 
 
-def to_unicode(x):
+def to_unicode(x):  # pragma: no cover
     """Convert argument into a unicode string."""
     if PY3:
         return str(x)
