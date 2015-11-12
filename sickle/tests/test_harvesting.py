@@ -65,10 +65,10 @@ def fake_harvest(*args, **kwargs):
         filename = '%s.xml' % error
     else:
         filename = '%s.xml' % verb
-    response = MockResponse(to_unicode(open(
-            os.path.join(this_dir, 'sample_data', filename), 'r').read()))
 
-    return OAIResponse(response, kwargs)
+    with open(os.path.join(this_dir, 'sample_data', filename), 'r') as fp:
+        response = MockResponse(to_unicode(fp.read()))
+        return OAIResponse(response, kwargs)
 
 
 class TestCase(unittest.TestCase):
