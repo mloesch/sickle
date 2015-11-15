@@ -1,6 +1,6 @@
-include LICENSE CHANGES.rst
+include LICENSE AUTHORS.rst CHANGES.rst README.rst
 recursive-include art *
-recursive-include doc *
-recursive-exclude doc *.pyc
-recursive-exclude doc *.pyo
-prune doc/_build
+recursive-include docs *
+recursive-exclude docs *.pyc
+recursive-exclude docs *.pyo
+prune docs/_build
