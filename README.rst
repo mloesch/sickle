@@ -1,8 +1,12 @@
 Sickle: OAI-PMH for Humans
 ==========================
+
 .. image:: https://travis-ci.org/mloesch/sickle.svg?branch=master
     :target: https://travis-ci.org/mloesch/sickle
-
+.. image:: https://img.shields.io/pypi/v/Sickle.svg
+    :target: https://pypi.python.org/pypi/Sickle
+.. image:: https://img.shields.io/pypi/dm/sickle.svg
+        :target: https://pypi.python.org/pypi/Sickle
 
 Sickle is a lightweight `OAI-PMH <http://www.openarchives.org/OAI/openarchivesprotocol.html>`_
 client library written in Python.  It has been designed for conveniently retrieving data from
