@@ -114,6 +114,7 @@ class Sickle(object):
                 time.sleep(retry_after)
             else:
                 http_response.raise_for_status()
+                http_response.encoding = 'utf-8'
                 return OAIResponse(http_response, params=kwargs)
 
     def ListRecords(self, ignore_deleted=False, **kwargs):
