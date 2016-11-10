@@ -69,7 +69,7 @@ class Sickle(object):
     def __init__(self, endpoint, http_method='GET', protocol_version='2.0',
                  iterator=OAIItemIterator, max_retries=5, timeout=None,
                  class_mapping=None,
-                 auth=None):
+                 auth=None, proxies=None):
         self.endpoint = endpoint
         if http_method not in ['GET', 'POST']:
             raise ValueError("Invalid HTTP method: %s! Must be GET or POST.")
@@ -88,6 +88,7 @@ class Sickle(object):
         self.oai_namespace = OAI_NAMESPACE % self.protocol_version
         self.class_mapping = class_mapping or DEFAULT_CLASS_MAP
         self.auth = auth
+        self.proxies = proxies
 
     def harvest(self, **kwargs):  # pragma: no cover
         """Make HTTP requests to the OAI server.
@@ -99,11 +100,13 @@ class Sickle(object):
             if self.http_method == 'GET':
                 http_response = requests.get(self.endpoint, params=kwargs,
                                              timeout=self.timeout,
-                                             auth=self.auth)
+                                             auth=self.auth,
+                                             proxies=self.proxies)
             else:
                 http_response = requests.post(self.endpoint, data=kwargs,
                                               timeout=self.timeout,
-                                              auth=self.auth)
+                                              auth=self.auth,
+                                              proxies=self.proxies)
             if http_response.status_code == 503:
                 try:
                     retry_after = int(http_response.headers.get('retry-after'))
