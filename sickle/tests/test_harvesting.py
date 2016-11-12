@@ -32,7 +32,7 @@ class MockResponse(object):
         self.text = text
 
 
-def fake_harvest(*args, **kwargs):
+def mock_harvest(*args, **kwargs):
     """Read test data from files instead of from an OAI interface.
 
     The data is read from the ``xml`` directory by using the provided
@@ -72,9 +72,18 @@ def fake_harvest(*args, **kwargs):
 
 
 class TestCase(unittest.TestCase):
+
+
+    def __init__(self, methodName='runTest'):
+        super(TestCase, self).__init__(methodName)
+        self.patch = mock.patch('sickle.app.Sickle.harvest', mock_harvest)
+
     def setUp(self):
-        mock.patch('sickle.app.Sickle.harvest', fake_harvest).start()
+        self.patch.start()
         self.sickle = Sickle('http://localhost')
+
+    def tearDown(self):
+        self.patch.stop()
 
     def test_OAIResponse(self):
         response = self.sickle.harvest(verb='ListRecords',

@@ -8,8 +8,8 @@
 import os
 import unittest
 
+from mock import patch, Mock
 from nose.tools import raises
-
 from sickle import Sickle
 
 this_dir, this_filename = os.path.split(__file__)
@@ -27,3 +27,15 @@ class TestCase(unittest.TestCase):
     @raises(TypeError)
     def test_invalid_iterator(self):
         Sickle("http://localhost", iterator=None)
+
+    def test_pass_request_args(self):
+        mock_response = Mock(text='<xml/>')
+        mock_get = Mock(return_value=mock_response)
+        with patch('sickle.app.requests.get', mock_get):
+            sickle = Sickle('url', timeout=10, proxies=dict(),
+                            auth=('user', 'password'))
+            sickle.ListRecords()
+            mock_get.assert_called_once_with('url',
+                                             params={'verb': 'ListRecords'},
+                                             timeout=10, proxies=dict(),
+                                             auth=('user', 'password'))

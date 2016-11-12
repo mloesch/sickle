@@ -8,15 +8,15 @@
     :copyright: Copyright 2015 Mathias Loesch
 """
 import inspect
-import time
 import logging
+import time
 
 import requests
+from sickle.iterator import BaseOAIIterator, OAIItemIterator
+from sickle.response import OAIResponse
 
 from .models import (Set, Record, Header, MetadataFormat,
                      Identify)
-from sickle.response import OAIResponse
-from sickle.iterator import BaseOAIIterator, OAIItemIterator
 
 logger = logging.getLogger(__name__)
 
@@ -54,22 +54,21 @@ class Sickle(object):
            (default: :class:`sickle.iterator.OAIItemIterator`)
     :param max_retries: Number of retries if HTTP request fails.
     :type max_retries: int
-    :param timeout: Timeout for HTTP requests.
-    :type timeout: int
     :type protocol_version: str
     :param class_mapping: A dictionary that maps OAI verbs to classes representing
                           OAI items. If not provided,
                           :data:`sickle.app.DEFAULT_CLASS_MAPPING` will be used.
     :type class_mapping: dict
-    :param auth: An optional tuple ('username', 'password')
-                 for accessing protected OAI interfaces.
-    :type auth: tuple
+    :param request_args: Arguments to be passed to requests when issuing HTTP
+                         requests. Useful examples are `auth=('username', 'password')`
+                         for basic auth-protected endpoints or `timeout=<int>`.
+                         See the `documentation of requests <http://docs.python-requests.org/en/master/api/#main-interface>`_
+                         for all available parameters.
     """
 
     def __init__(self, endpoint, http_method='GET', protocol_version='2.0',
-                 iterator=OAIItemIterator, max_retries=5, timeout=None,
-                 class_mapping=None,
-                 auth=None):
+                 iterator=OAIItemIterator, max_retries=5,
+                 class_mapping=None, **request_args):
         self.endpoint = endpoint
         if http_method not in ['GET', 'POST']:
             raise ValueError("Invalid HTTP method: %s! Must be GET or POST.")
@@ -84,10 +83,9 @@ class Sickle(object):
             raise TypeError(
                 "Argument 'iterator' must be subclass of %s" % BaseOAIIterator.__name__)
         self.max_retries = max_retries
-        self.timeout = timeout
         self.oai_namespace = OAI_NAMESPACE % self.protocol_version
         self.class_mapping = class_mapping or DEFAULT_CLASS_MAP
-        self.auth = auth
+        self.request_args = request_args
 
     def harvest(self, **kwargs):  # pragma: no cover
         """Make HTTP requests to the OAI server.
@@ -98,12 +96,10 @@ class Sickle(object):
         for _ in range(self.max_retries):
             if self.http_method == 'GET':
                 http_response = requests.get(self.endpoint, params=kwargs,
-                                             timeout=self.timeout,
-                                             auth=self.auth)
+                                             **self.request_args)
             else:
                 http_response = requests.post(self.endpoint, data=kwargs,
-                                              timeout=self.timeout,
-                                              auth=self.auth)
+                                              **self.request_args)
             if http_response.status_code == 503:
                 try:
                     retry_after = int(http_response.headers.get('retry-after'))
