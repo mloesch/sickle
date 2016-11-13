@@ -59,6 +59,13 @@ class Sickle(object):
                           OAI items. If not provided,
                           :data:`sickle.app.DEFAULT_CLASS_MAPPING` will be used.
     :type class_mapping: dict
+    :param encoding:     Can be used to override the encoding used when decoding
+                         the server response. If not specified, `requests` will
+                         use the encoding returned by the server in the
+                         `content-type` header. However, if the `charset`
+                         information is missing, `requests` will fallback to
+                         `'ISO-8859-1'`.
+    :type encoding:      str
     :param request_args: Arguments to be passed to requests when issuing HTTP
                          requests. Useful examples are `auth=('username', 'password')`
                          for basic auth-protected endpoints or `timeout=<int>`.
@@ -68,7 +75,7 @@ class Sickle(object):
 
     def __init__(self, endpoint, http_method='GET', protocol_version='2.0',
                  iterator=OAIItemIterator, max_retries=5,
-                 class_mapping=None, **request_args):
+                 class_mapping=None, encoding=None, **request_args):
         self.endpoint = endpoint
         if http_method not in ['GET', 'POST']:
             raise ValueError("Invalid HTTP method: %s! Must be GET or POST.")
@@ -85,6 +92,7 @@ class Sickle(object):
         self.max_retries = max_retries
         self.oai_namespace = OAI_NAMESPACE % self.protocol_version
         self.class_mapping = class_mapping or DEFAULT_CLASS_MAP
+        self.encoding = encoding
         self.request_args = request_args
 
     def harvest(self, **kwargs):  # pragma: no cover
@@ -110,6 +118,8 @@ class Sickle(object):
                 time.sleep(retry_after)
             else:
                 http_response.raise_for_status()
+                if self.encoding:
+                    http_response.encoding = self.encoding
                 return OAIResponse(http_response, params=kwargs)
 
     def ListRecords(self, ignore_deleted=False, **kwargs):

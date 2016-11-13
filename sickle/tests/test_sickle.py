@@ -39,3 +39,11 @@ class TestCase(unittest.TestCase):
                                              params={'verb': 'ListRecords'},
                                              timeout=10, proxies=dict(),
                                              auth=('user', 'password'))
+
+    def test_override_encoding(self):
+        mock_response = Mock(text='<xml/>')
+        mock_get = Mock(return_value=mock_response)
+        with patch('sickle.app.requests.get', mock_get):
+            sickle = Sickle('url', encoding='encoding')
+            sickle.ListSets()
+            self.assertEqual(mock_response.encoding, 'encoding')
