@@ -1,11 +1,19 @@
 Changelog
 =========
 
+Version 0.6
+-----------
+
+November 13, 2016
+
+- it is now possible to pass any keyword arguments to requests
+- the encoding used to decode the server response can be overridden
+
 
 Version 0.5
 -----------
 
-Novemver 12, 2015
+November 12, 2015
 
 - support for Python 3
 - consider resumption tokens with empty tag bodies
