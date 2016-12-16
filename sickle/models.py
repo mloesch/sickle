@@ -7,6 +7,7 @@
 
     :copyright: Copyright 2015 Mathias Loesch
 """
+from datetime import datetime
 
 from lxml import etree
 
@@ -97,8 +98,16 @@ class Header(OAIItem):
         self.deleted = self.xml.attrib.get('status') == 'deleted'
         self.identifier = self.xml.find(
             self._oai_namespace + 'identifier').text
-        self.datestamp = self.xml.find(
-            self._oai_namespace + 'datestamp').text
+
+        # Workaround for misbehaving OAI-PMH servers that don't include
+        # a datestamp in the header: Use the current time
+        datestamp_elem =  self.xml.find(
+            self._oai_namespace + 'datestamp')
+        if datestamp_elem:
+            self.datestamp = datestamp_elem.text
+        else:
+            self.datestamp = datetime.utcnow().isoformat() + 'Z'
+
         self.setSpecs = [setSpec.text for setSpec in
                          self.xml.findall(self._oai_namespace + 'setSpec')]
 
