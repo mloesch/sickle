@@ -95,10 +95,11 @@ class Header(OAIItem):
     def __init__(self, header_element):
         super(Header, self).__init__(header_element, strip_ns=True)
         self.deleted = self.xml.attrib.get('status') == 'deleted'
-        self.identifier = self.xml.find(
-            self._oai_namespace + 'identifier').text
-        self.datestamp = self.xml.find(
-            self._oai_namespace + 'datestamp').text
+        _identifier_element = self.xml.find(self._oai_namespace + 'identifier')
+        _datestamp_element = self.xml.find(self._oai_namespace + 'datestamp')
+
+        self.identifier = getattr(_identifier_element, 'text', None)
+        self.datestamp = getattr(_datestamp_element, 'text', None)
         self.setSpecs = [setSpec.text for setSpec in
                          self.xml.findall(self._oai_namespace + 'setSpec')]
 

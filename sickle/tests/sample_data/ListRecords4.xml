@@ -6,8 +6,8 @@
     <ListRecords>
         <record>
             <header status="deleted">
-                <identifier>oai:test.example.com:1585310</identifier>
-                <datestamp>2011-07-18T16:31:00Z</datestamp>
+                <!--Missing identifier-->
+                <!--Missing datestamp-->
             </header>
         </record>
         <record>
