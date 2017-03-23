@@ -121,38 +121,39 @@ class TestCase(unittest.TestCase):
 
     def test_ListIdentifiers(self):
         records = self.sickle.ListIdentifiers(metadataPrefix='oai_dc')
-        assert len([r for r in records]) == 4
+        self.assertEqual(len([r for r in records]), 4)
 
     def test_ListIdentifiers_ignore_deleted(self):
         records = self.sickle.ListIdentifiers(
             metadataPrefix='oai_dc', ignore_deleted=True)
         # There are 2 deleted headers in the test data
         num_records = len([r for r in records])
-        assert num_records == 2
+        self.assertEqual(num_records, 2)
 
     def test_Identify(self):
         identify = self.sickle.Identify()
-        assert hasattr(identify, 'repositoryName')
-        assert hasattr(identify, 'baseURL')
-        assert hasattr(identify, 'adminEmail')
-        assert hasattr(identify, 'earliestDatestamp')
-        assert hasattr(identify, 'deletedRecord')
-        assert hasattr(identify, 'granularity')
-        assert hasattr(identify, 'description')
-        assert hasattr(identify, 'oai_identifier')
-        assert hasattr(identify, 'sampleIdentifier')
+        self.assertTrue(hasattr(identify, 'repositoryName'))
+        self.assertTrue(hasattr(identify, 'baseURL'))
+        self.assertTrue(hasattr(identify, 'adminEmail'))
+        self.assertTrue(hasattr(identify, 'earliestDatestamp'))
+        self.assertTrue(hasattr(identify, 'deletedRecord'))
+        self.assertTrue(hasattr(identify, 'granularity'))
+        self.assertTrue(hasattr(identify, 'description'))
+        self.assertTrue(hasattr(identify, 'oai_identifier'))
+        self.assertTrue(hasattr(identify, 'sampleIdentifier'))
         dict(identify)
 
     def test_GetRecord(self):
         oai_id = 'oai:test.example.com:1996652'
         record = self.sickle.GetRecord(identifier=oai_id)
-        assert record.header.identifier == oai_id
-        assert oai_id in record.raw
+        self.assertEqual(record.header.identifier, oai_id)
+        self.assertIn(oai_id, record.raw)
+        self.assertEqual(record.header.datestamp, '2011-09-05T12:51:52Z')
         self.assertIsInstance(record.xml, etree._Element)
         binary_type(record)
         text_type(record)
         dict(record.header)
-        assert dict(record) == record.metadata
+        self.assertEqual(dict(record), record.metadata)
 
     # Test OAI-specific exceptions
 
@@ -194,4 +195,4 @@ class TestCase(unittest.TestCase):
     def test_OAIResponseIterator(self):
         sickle = Sickle('fake_url', iterator=OAIResponseIterator)
         records = [r for r in sickle.ListRecords(metadataPrefix='oai_dc')]
-        assert len(records) == 4
+        self.assertEqual(len(records), 4)
