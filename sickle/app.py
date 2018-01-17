@@ -108,13 +108,13 @@ class Sickle(object):
             else:
                 http_response = requests.post(self.endpoint, data=kwargs,
                                               **self.request_args)
-            if http_response.status_code == 503:
+            if 500 <= http_response.status_code <= 599:
                 try:
                     retry_after = int(http_response.headers.get('retry-after'))
                 except TypeError:
                     retry_after = 20
                 logger.info(
-                    "HTTP 503! Retrying after %d seconds..." % retry_after)
+                    "HTTP %d! Retrying after %d seconds..." % (http_response.status_code, retry_after))
                 time.sleep(retry_after)
             else:
                 http_response.raise_for_status()
