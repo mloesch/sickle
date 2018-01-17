@@ -29,7 +29,7 @@ class TestCase(unittest.TestCase):
         Sickle("http://localhost", iterator=None)
 
     def test_pass_request_args(self):
-        mock_response = Mock(text='<xml/>')
+        mock_response = Mock(text='<xml/>', status_code=200)
         mock_get = Mock(return_value=mock_response)
         with patch('sickle.app.requests.get', mock_get):
             sickle = Sickle('url', timeout=10, proxies=dict(),
@@ -41,7 +41,7 @@ class TestCase(unittest.TestCase):
                                              auth=('user', 'password'))
 
     def test_override_encoding(self):
-        mock_response = Mock(text='<xml/>')
+        mock_response = Mock(text='<xml/>', status_code=200)
         mock_get = Mock(return_value=mock_response)
         with patch('sickle.app.requests.get', mock_get):
             sickle = Sickle('url', encoding='encoding')
