@@ -30,6 +30,7 @@ class MockResponse(object):
         # request's response object carry an attribute 'text' which contains
         # the server's response data encoded as unicode.
         self.text = text
+        self.content = text.encode('utf-8')
 
 
 def mock_harvest(*args, **kwargs):
