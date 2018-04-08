@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='Sickle',
-    version='0.6.2',
+    version='0.6.3',
     url='http://github.com/mloesch/sickle',
     license='BSD',
     author='Mathias Loesch',
