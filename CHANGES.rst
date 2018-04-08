@@ -1,10 +1,20 @@
 Changelog
 =========
 
+
+
+Version 0.6.3
+-------------
+
+April 8, 2018
+
+- fix unicode problems (issues 20 & 22)
+
+
 Version 0.6.2
 -------------
 
-August 11, 2016
+August 11, 2017
 
 - missing datestamp and identifier elements in record header don't break harvesting
 - lxml resolve_entities disabled (http://lxml.de/FAQ.html#how-do-i-use-lxml-safely-as-a-web-service-endpoint)
