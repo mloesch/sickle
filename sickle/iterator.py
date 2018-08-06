@@ -109,7 +109,7 @@ class OAIResponseIterator(BaseOAIIterator):
                 response = self.oai_response
                 self.oai_response = None
                 return response
-            elif self.resumption_token:
+            elif self.resumption_token and self.resumption_token.token:
                 self._next_response()
             else:
                 raise StopIteration
