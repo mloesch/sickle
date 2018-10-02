@@ -3,6 +3,15 @@ Changelog
 
 
 
+Version 0.6.4
+-------------
+
+October 2, 2018
+
+- fix: resumption token with empty body indicates last response (https://github.com/mloesch/sickle/issues/25)
+
+
+
 Version 0.6.3
 -------------
 
