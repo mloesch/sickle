@@ -30,6 +30,7 @@ class MockResponse(object):
         # request's response object carry an attribute 'text' which contains
         # the server's response data encoded as unicode.
         self.text = text
+        self.content = text.encode('utf-8')
 
 
 def mock_harvest(*args, **kwargs):
@@ -196,3 +197,65 @@ class TestCase(unittest.TestCase):
         sickle = Sickle('fake_url', iterator=OAIResponseIterator)
         records = [r for r in sickle.ListRecords(metadataPrefix='oai_dc')]
         self.assertEqual(len(records), 4)
+
+
+def mock_get(*args, **kwargs):
+    class MockResponseWrongEncoding(object):
+        """Mimics a case where the requests library misidentifies the text encoding.
+
+        If http headers do not specify the correct encoding, requests will default
+        to 'ISO-8859-1', even though the oai-pmh document might specify e.g.
+        <xml encoding='utf-8'>.
+
+        Parameters
+        ----------
+        filename : str
+            Name of a utf8-encoded test file in the sample_data directory.
+
+        Attributes
+        ----------
+        content : bytes (py3) / str (py2)
+            Raw utf8-encoded bytestream
+        text : str (py3) / unicode (py2)
+            Unicode string from self.content, but wrongly decoded as ISO-8859-1
+        status_code : int
+            = 200
+        """
+
+        def __init__(self, filename='GetRecord_utf8test.xml'):
+            with open(os.path.join(this_dir, 'sample_data', filename), 'rb') as fp:
+                self.content = fp.read()
+            self.text = self.content.decode('ISO-8859-1')
+            self.status_code = 200
+
+        def raise_for_status(self):
+            pass
+
+    return MockResponseWrongEncoding()
+
+
+class TestCaseWrongEncoding(unittest.TestCase):
+
+    def __init__(self, methodName='runTest'):
+        super(TestCaseWrongEncoding, self).__init__(methodName)
+        self.patch = mock.patch('sickle.app.requests.get', mock_get)
+
+    def setUp(self):
+        self.patch.start()
+        self.sickle = Sickle('http://localhost')
+
+    def tearDown(self):
+        self.patch.stop()
+
+    def test_GetRecord(self):
+        oai_id = 'oai:test.example.com:1996652'
+        record = self.sickle.GetRecord(identifier=oai_id)
+        self.assertEqual(record.header.identifier, oai_id)
+        self.assertIn(oai_id, record.raw)
+        self.assertEqual(record.header.datestamp, '2011-09-05T12:51:52Z')
+        self.assertIsInstance(record.xml, etree._Element)
+        binary_type(record)
+        text_type(record)
+        dict(record.header)
+        self.assertEqual(dict(record), record.metadata)
+        self.assertIn(u'某人', record.metadata['creator'])
