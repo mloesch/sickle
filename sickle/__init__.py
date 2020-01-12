@@ -8,7 +8,7 @@
     :copyright: Copyright 2015 Mathias Loesch
 """
 
-__version__ = '0.6.4'
+__version__ = '0.6.5'
 
-from .app import Sickle
 from sickle.response import OAIResponse
+from .app import Sickle

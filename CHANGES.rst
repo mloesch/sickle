@@ -1,6 +1,13 @@
 Changelog
 =========
 
+Version 0.6.5
+-------------
+
+January 12, 2020
+
+- fix: repr methods where causing an exception on Python 3 (https://github.com/mloesch/sickle/issues/30)
+
 
 
 Version 0.6.4
