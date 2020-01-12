@@ -10,8 +10,8 @@
 
 from lxml import etree
 
+from ._compat import PY3, to_str
 from .utils import get_namespace, xml_to_dict
-from ._compat import PY3
 
 
 class ResumptionToken(object):
@@ -165,7 +165,7 @@ class Set(OAIItem):
             setattr(self, k.replace('-', '_'), v[0])
 
     def __repr__(self):
-        return u'<Set %s>'.encode('utf8') % self.setName
+        return '<Set %s>' % to_str(self.setName)
 
     def __iter__(self):
         return iter(self._set_dict.items()) if PY3 else \
@@ -187,7 +187,7 @@ class MetadataFormat(OAIItem):
             setattr(self, k.replace('-', '_'), v[0])
 
     def __repr__(self):
-        return u'<MetadataFormat %s>'.encode('utf8') % self.metadataPrefix
+        return '<MetadataFormat %s>' % to_str(self.metadataPrefix)
 
     def __iter__(self):
         return iter(self._mdf_dict.items()) if PY3 else \
