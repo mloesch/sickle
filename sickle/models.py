@@ -132,13 +132,7 @@ class Record(OAIItem):
             './/' + self._oai_namespace + 'header'))
         self.deleted = self.header.deleted
         if not self.deleted:
-            # We want to get record/metadata/<container>/*
-            # <container> would be the element ``dc``
-            # in the ``oai_dc`` case.
-            self.metadata = xml_to_dict(
-                self.xml.find(
-                    './/' + self._oai_namespace + 'metadata'
-                ).getchildren()[0], strip_ns=self._strip_ns)
+            self.metadata = self.get_metadata()
 
     def __repr__(self):
         if self.header.deleted:
@@ -149,6 +143,15 @@ class Record(OAIItem):
     def __iter__(self):
         return iter(self.metadata.items()) if PY3 else \
             self.metadata.iteritems()
+
+    def get_metadata(self):
+        # We want to get record/metadata/<container>/*
+        # <container> would be the element ``dc``
+        # in the ``oai_dc`` case.
+        return xml_to_dict(
+            self.xml.find(
+                './/' + self._oai_namespace + 'metadata'
+            ).getchildren()[0], strip_ns=self._strip_ns)
 
 
 class Set(OAIItem):
