@@ -135,10 +135,13 @@ class Record(OAIItem):
             # We want to get record/metadata/<container>/*
             # <container> would be the element ``dc``
             # in the ``oai_dc`` case.
-            self.metadata = xml_to_dict(
-                self.xml.find(
-                    './/' + self._oai_namespace + 'metadata'
-                ).getchildren()[0], strip_ns=self._strip_ns)
+            try:
+                self.metadata = xml_to_dict(
+                    self.xml.find(
+                        './/' + self._oai_namespace + 'metadata'
+                    ).getchildren()[0], strip_ns=self._strip_ns)
+            except AttributeError:
+                self.metadata = None
 
     def __repr__(self):
         if self.header.deleted:
