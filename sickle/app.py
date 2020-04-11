@@ -10,6 +10,7 @@
 import inspect
 import logging
 import time
+import datetime
 
 import requests
 from sickle.iterator import BaseOAIIterator, OAIItemIterator
@@ -109,13 +110,37 @@ class Sickle(object):
                 http_response = requests.post(self.endpoint, data=kwargs,
                                               **self.request_args)
             if http_response.status_code == 503:
-                try:
-                    retry_after = int(http_response.headers.get('retry-after'))
-                except TypeError:
-                    retry_after = 20
-                logger.info(
-                    "HTTP 503! Retrying after %d seconds..." % retry_after)
+                # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After
+                # remove extra whitespace and split on space character
+                retry_after_response = http_response.headers.get('retry-after').strip().split(' ')
+                if len(retry_after_response) == 1:
+                    try:    
+                        retry_after = int(retry_after_response[0])
+                    except TypeError:
+                        retry_after = 20         
+                        
+                if len(retry_after_response) == 6: # then we are assuming we have a date as per spec
+                    # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Date
+                    
+                    # to get around locale specific handling of datetime, calculate month number
+                    valid_months = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+                    month = valid_months.index(retry_after_response[2]) + 1
+                    
+                    isoformat = "{year}-{month}-{day} {time}+00:00".format(
+                        year=retry_after_response[3], 
+                        month=month, 
+                        day=retry_after_response[1], 
+                        time=retry_after_response[4]
+                    )
+                    
+                    retry_at = datetime.fromisoformat(date_string)
+                    # get offset from now in seconds
+                    retry_after = (retry_at - datetime.datetime.now()).seconds
+                
+                
+                logger.info("HTTP 503! Retrying after %d seconds..." % retry_after)
                 time.sleep(retry_after)
+                
             else:
                 http_response.raise_for_status()
                 if self.encoding:
