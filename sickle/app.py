@@ -122,6 +122,8 @@ class Sickle(object):
                     http_response.encoding = self.encoding
                 return OAIResponse(http_response, params=kwargs)
 
+        raise TimeoutError("max retries (%d) exceeded for %s" % (self.max_retries, self.endpoint))
+
     def ListRecords(self, ignore_deleted=False, **kwargs):
         """Issue a ListRecords request.
 

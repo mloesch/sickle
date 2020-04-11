@@ -259,3 +259,20 @@ class TestCaseWrongEncoding(unittest.TestCase):
         dict(record.header)
         self.assertEqual(dict(record), record.metadata)
         self.assertIn(u'某人', record.metadata['creator'])
+
+class TestHarvestTimeout(unittest.TestCase):
+
+    def __init__(self, methodName='runTest'):
+        super(TestHarvestTimeout, self).__init__(methodName)
+        self.patch = mock.patch('sickle.app.requests.get', mock_get)
+
+    def setUp(self):
+        self.patch.start()
+        self.sickle = Sickle('http://localhost', max_retries=0)
+
+    def tearDown(self):
+        self.patch.stop()
+
+    def test_harvest(self):
+        with self.assertRaises(TimeoutError):
+            self.sickle.harvest()
