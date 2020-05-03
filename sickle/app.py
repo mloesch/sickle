@@ -12,9 +12,9 @@ import logging
 import time
 
 import requests
+
 from sickle.iterator import BaseOAIIterator, OAIItemIterator
 from sickle.response import OAIResponse
-
 from .models import (Set, Record, Header, MetadataFormat,
                      Identify)
 
@@ -52,8 +52,15 @@ class Sickle(object):
     :type protocol_version: str
     :param iterator: The type of the returned iterator
            (default: :class:`sickle.iterator.OAIItemIterator`)
-    :param max_retries: Number of retries if HTTP request fails.
+    :param max_retries: Number of retry attempts if an HTTP request fails (default: 0 = request only once). Sickle will
+                        use the value from the retry-after header (if present) and will wait the specified number of
+                        seconds between retries.
     :type max_retries: int
+    :param retry_status_codes: HTTP status codes to retry (default will only retry on 503)
+    :type retry_status_codes: iterable
+    :param default_retry_after: default number of seconds to wait between retries in case no retry-after header is found
+                                on the response (defaults to 60 seconds)
+    :type default_retry_after: int
     :type protocol_version: str
     :param class_mapping: A dictionary that maps OAI verbs to classes representing
                           OAI items. If not provided,
@@ -73,9 +80,17 @@ class Sickle(object):
                          for all available parameters.
     """
 
-    def __init__(self, endpoint, http_method='GET', protocol_version='2.0',
-                 iterator=OAIItemIterator, max_retries=5,
-                 class_mapping=None, encoding=None, **request_args):
+    def __init__(self, endpoint,
+                 http_method='GET',
+                 protocol_version='2.0',
+                 iterator=OAIItemIterator,
+                 max_retries=0,
+                 retry_status_codes=None,
+                 default_retry_after=60,
+                 class_mapping=None,
+                 encoding=None,
+                 **request_args):
+
         self.endpoint = endpoint
         if http_method not in ['GET', 'POST']:
             raise ValueError("Invalid HTTP method: %s! Must be GET or POST.")
@@ -90,6 +105,8 @@ class Sickle(object):
             raise TypeError(
                 "Argument 'iterator' must be subclass of %s" % BaseOAIIterator.__name__)
         self.max_retries = max_retries
+        self.retry_status_codes = retry_status_codes or [503]
+        self.default_retry_after = default_retry_after
         self.oai_namespace = OAI_NAMESPACE % self.protocol_version
         self.class_mapping = class_mapping or DEFAULT_CLASS_MAP
         self.encoding = encoding
@@ -101,26 +118,24 @@ class Sickle(object):
         :param kwargs: OAI HTTP parameters.
         :rtype: :class:`sickle.OAIResponse`
         """
+        http_response = self._request(kwargs)
         for _ in range(self.max_retries):
-            if self.http_method == 'GET':
-                http_response = requests.get(self.endpoint, params=kwargs,
-                                             **self.request_args)
-            else:
-                http_response = requests.post(self.endpoint, data=kwargs,
-                                              **self.request_args)
-            if http_response.status_code == 503:
-                try:
-                    retry_after = int(http_response.headers.get('retry-after'))
-                except TypeError:
-                    retry_after = 20
-                logger.info(
-                    "HTTP 503! Retrying after %d seconds..." % retry_after)
+            if self._is_error_code(http_response.status_code) \
+                    and http_response.status_code in self.retry_status_codes:
+                retry_after = self.get_retry_after(http_response)
+                logger.warning(
+                    "HTTP %d! Retrying after %d seconds..." % (http_response.status_code, retry_after))
                 time.sleep(retry_after)
-            else:
-                http_response.raise_for_status()
-                if self.encoding:
-                    http_response.encoding = self.encoding
-                return OAIResponse(http_response, params=kwargs)
+                http_response = self._request(kwargs)
+        http_response.raise_for_status()
+        if self.encoding:
+            http_response.encoding = self.encoding
+        return OAIResponse(http_response, params=kwargs)
+
+    def _request(self, kwargs):
+        if self.http_method == 'GET':
+            return requests.get(self.endpoint, params=kwargs, **self.request_args)
+        return requests.post(self.endpoint, data=kwargs, **self.request_args)
 
     def ListRecords(self, ignore_deleted=False, **kwargs):
         """Issue a ListRecords request.
@@ -178,3 +193,15 @@ class Sickle(object):
         params = kwargs
         params.update({'verb': 'ListMetadataFormats'})
         return self.iterator(self, params)
+
+    def get_retry_after(self, http_response):
+        if http_response.status_code == 503:
+            try:
+                return int(http_response.headers.get('retry-after'))
+            except TypeError:
+                return self.default_retry_after
+        return self.default_retry_after
+
+    @staticmethod
+    def _is_error_code(status_code):
+        return status_code >= 400
