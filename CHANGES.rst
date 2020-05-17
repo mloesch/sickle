@@ -1,6 +1,18 @@
 Changelog
 =========
 
+Version 0.7.0
+-------------
+
+May 17, 2020
+
+- method for record metadata extraction has been extracted (``Record.get_metadata()``) to make subclassing easier
+  (https://github.com/mloesch/sickle/pull/38)
+- retryable HTTP status codes and default wait time between retries can be customized (https://github.com/mloesch/sickle/issues/21 https://github.com/mloesch/sickle/pull/41)
+- retry logic has been fixed: ``max_retries`` parameter now refers to no. of retries, not counting the initial request anymore
+- the default number of HTTP retries has been set to 0 (= no retries)
+- fix for https://github.com/mloesch/sickle/pull/39
+
 Version 0.6.5
 -------------
 
@@ -9,14 +21,12 @@ January 12, 2020
 - fix: repr methods where causing an exception on Python 3 (https://github.com/mloesch/sickle/issues/30)
 
 
-
 Version 0.6.4
 -------------
 
 October 2, 2018
 
 - fix: resumption token with empty body indicates last response (https://github.com/mloesch/sickle/issues/25)
-
 
 
 Version 0.6.3

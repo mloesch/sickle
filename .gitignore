@@ -8,3 +8,4 @@ coverage.xml
 .coverage*
 .idea
 .eggs/
+.DS_Store
