@@ -61,7 +61,7 @@ class Sickle(object):
     :param retry_status_codes: HTTP status codes to retry (default will retry on 429, 500, 502, 503 and 504)
     :type retry_status_codes: iterable
     :param retry_backoff_factor: Backoff factor to apply between retries after the second try,
-                                 if no Retry-After header is sent by the server. Default: 1.5
+                                 if no Retry-After header is sent by the server. Default: 2.0
     :type retry_backoff_factor: float
     :type protocol_version: str
     :param class_mapping: A dictionary that maps OAI verbs to classes representing
@@ -89,7 +89,7 @@ class Sickle(object):
                  max_retries=0,
                  retry_status_codes=None,
                  default_retry_after=None,
-                 retry_backoff_factor=1.5,
+                 retry_backoff_factor=2,
                  class_mapping=None,
                  encoding=None,
                  **request_args):
