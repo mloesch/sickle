@@ -12,6 +12,8 @@ import logging
 import time
 
 import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 
 from sickle.iterator import BaseOAIIterator, OAIItemIterator
 from sickle.response import OAIResponse
@@ -56,11 +58,11 @@ class Sickle(object):
                         use the value from the retry-after header (if present) and will wait the specified number of
                         seconds between retries.
     :type max_retries: int
-    :param retry_status_codes: HTTP status codes to retry (default will only retry on 503)
+    :param retry_status_codes: HTTP status codes to retry (default will retry on 429, 500, 502, 503 and 504)
     :type retry_status_codes: iterable
-    :param default_retry_after: default number of seconds to wait between retries in case no retry-after header is found
-                                on the response (defaults to 60 seconds)
-    :type default_retry_after: int
+    :param retry_backoff_factor: Backoff factor to apply between retries after the second try,
+                                 if no Retry-After header is sent by the server. Default: 2.0
+    :type retry_backoff_factor: float
     :type protocol_version: str
     :param class_mapping: A dictionary that maps OAI verbs to classes representing
                           OAI items. If not provided,
@@ -86,7 +88,8 @@ class Sickle(object):
                  iterator=OAIItemIterator,
                  max_retries=0,
                  retry_status_codes=None,
-                 default_retry_after=60,
+                 default_retry_after=None,
+                 retry_backoff_factor=2,
                  class_mapping=None,
                  encoding=None,
                  **request_args):
@@ -104,9 +107,20 @@ class Sickle(object):
         else:
             raise TypeError(
                 "Argument 'iterator' must be subclass of %s" % BaseOAIIterator.__name__)
-        self.max_retries = max_retries
-        self.retry_status_codes = retry_status_codes or [503]
-        self.default_retry_after = default_retry_after
+
+        if default_retry_after is not None:
+            logger.warning("default_retry_after is no longer supported, please use retry_backoff_factor instead.")
+
+        retry_adapter = requests.adapters.HTTPAdapter(max_retries=Retry(
+            total=max_retries,
+            backoff_factor=retry_backoff_factor,
+            status_forcelist=retry_status_codes or [429, 500, 502, 503, 504],
+            method_whitelist=frozenset(['GET', 'POST'])
+        ))
+        self.session = requests.Session()
+        self.session.mount('https://', retry_adapter)
+        self.session.mount('http://', retry_adapter)
+
         self.oai_namespace = OAI_NAMESPACE % self.protocol_version
         self.class_mapping = class_mapping or DEFAULT_CLASS_MAP
         self.encoding = encoding
@@ -119,23 +133,17 @@ class Sickle(object):
         :rtype: :class:`sickle.OAIResponse`
         """
         http_response = self._request(kwargs)
-        for _ in range(self.max_retries):
-            if self._is_error_code(http_response.status_code) \
-                    and http_response.status_code in self.retry_status_codes:
-                retry_after = self.get_retry_after(http_response)
-                logger.warning(
-                    "HTTP %d! Retrying after %d seconds..." % (http_response.status_code, retry_after))
-                time.sleep(retry_after)
-                http_response = self._request(kwargs)
-        http_response.raise_for_status()
         if self.encoding:
             http_response.encoding = self.encoding
         return OAIResponse(http_response, params=kwargs)
 
     def _request(self, kwargs):
         if self.http_method == 'GET':
-            return requests.get(self.endpoint, params=kwargs, **self.request_args)
-        return requests.post(self.endpoint, data=kwargs, **self.request_args)
+            response = self.session.get(self.endpoint, params=kwargs, **self.request_args)
+        else:
+            response = self.session.post(self.endpoint, data=kwargs, **self.request_args)
+        response.raise_for_status()
+        return response
 
     def ListRecords(self, ignore_deleted=False, **kwargs):
         """Issue a ListRecords request.

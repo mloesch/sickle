@@ -238,14 +238,10 @@ class TestCaseWrongEncoding(unittest.TestCase):
 
     def __init__(self, methodName='runTest'):
         super(TestCaseWrongEncoding, self).__init__(methodName)
-        self.patch = mock.patch('sickle.app.requests.get', mock_get)
 
     def setUp(self):
-        self.patch.start()
         self.sickle = Sickle('http://localhost')
-
-    def tearDown(self):
-        self.patch.stop()
+        self.sickle.session.get = mock_get
 
     def test_GetRecord(self):
         oai_id = 'oai:test.example.com:1996652'
