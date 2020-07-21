@@ -115,7 +115,7 @@ class Sickle(object):
             total=max_retries,
             backoff_factor=retry_backoff_factor,
             status_forcelist=retry_status_codes or [429, 500, 502, 503, 504],
-            method_whitelist=['GET', 'POST']
+            method_whitelist=frozenset(['GET', 'POST'])
         ))
         self.session = requests.Session()
         self.session.mount('https://', retry_adapter)
@@ -140,7 +140,8 @@ class Sickle(object):
     def _request(self, kwargs):
         if self.http_method == 'GET':
             response = self.session.get(self.endpoint, params=kwargs, **self.request_args)
-        response = self.session.post(self.endpoint, data=kwargs, **self.request_args)
+        else:
+            response = self.session.post(self.endpoint, data=kwargs, **self.request_args)
         response.raise_for_status()
         return response
 
