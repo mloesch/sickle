@@ -146,6 +146,8 @@ class OAIItemIterator(BaseOAIIterator):
                 mapped = self.mapper(item)
                 if self.ignore_deleted and mapped.deleted:
                     continue
+                if hasattr(mapped, 'metadata') and mapped.metadata == None:
+                    continue
                 return mapped
             if self.resumption_token and self.resumption_token.token:
                 self._next_response()

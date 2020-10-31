@@ -46,6 +46,13 @@
                 </oai_dc:dc>
             </metadata>
         </record>
+        <record>
+          <header>
+            <identifier>oai:digital.librarycompany.org:digitool_55043</identifier>
+            <datestamp>2018-11-28T16:18:30Z</datestamp>
+            <setSpec>Islandora_CVMC1</setSpec>
+          </header>
+        </record>
         <resumptionToken completeListSize="8" cursor="0">ListRecords2.xml</resumptionToken>
     </ListRecords>
 </OAI-PMH>
