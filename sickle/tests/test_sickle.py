@@ -11,6 +11,7 @@ import unittest
 from mock import patch, Mock
 from nose.tools import raises
 from requests import HTTPError
+from requests import Session
 
 from sickle import Sickle
 
@@ -33,7 +34,7 @@ class TestCase(unittest.TestCase):
     def test_pass_request_args(self):
         mock_response = Mock(text=u'<xml/>', content='<xml/>', status_code=200)
         mock_get = Mock(return_value=mock_response)
-        with patch('sickle.app.requests.get', mock_get):
+        with patch.object(Session, 'get', mock_get):
             sickle = Sickle('url', timeout=10, proxies=dict(),
                             auth=('user', 'password'))
             sickle.ListRecords()
@@ -45,7 +46,7 @@ class TestCase(unittest.TestCase):
     def test_override_encoding(self):
         mock_response = Mock(text='<xml/>', content='<xml/>', status_code=200)
         mock_get = Mock(return_value=mock_response)
-        with patch('sickle.app.requests.get', mock_get):
+        with patch.object(Session, 'get', mock_get):
             sickle = Sickle('url', encoding='encoding')
             sickle.ListSets()
             mock_get.assert_called_once_with('url',
@@ -56,7 +57,7 @@ class TestCase(unittest.TestCase):
                              headers={'retry-after': '10'},
                              raise_for_status=Mock(side_effect=HTTPError))
         mock_get = Mock(return_value=mock_response)
-        with patch('sickle.app.requests.get', mock_get):
+        with patch.object(Session, 'get', mock_get):
             sickle = Sickle('url')
             try:
                 sickle.ListRecords()
@@ -71,7 +72,7 @@ class TestCase(unittest.TestCase):
         mock_get = Mock(return_value=mock_response)
         sleep_mock = Mock()
         with patch('time.sleep', sleep_mock):
-            with patch('sickle.app.requests.get', mock_get):
+            with patch.object(Session, 'get', mock_get):
                 sickle = Sickle('url', max_retries=3, default_retry_after=0)
                 try:
                     sickle.ListRecords()
@@ -87,7 +88,7 @@ class TestCase(unittest.TestCase):
         mock_response = Mock(status_code=500,
                              raise_for_status=Mock(side_effect=HTTPError))
         mock_get = Mock(return_value=mock_response)
-        with patch('sickle.app.requests.get', mock_get):
+        with patch.object(Session, 'get', mock_get):
             sickle = Sickle('url', max_retries=3, default_retry_after=0, retry_status_codes=(503, 500))
             try:
                 sickle.ListRecords()
