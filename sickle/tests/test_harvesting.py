@@ -10,6 +10,7 @@ import unittest
 
 from lxml import etree
 from nose.tools import raises
+from requests import Session
 import mock
 
 from sickle import Sickle
@@ -238,7 +239,7 @@ class TestCaseWrongEncoding(unittest.TestCase):
 
     def __init__(self, methodName='runTest'):
         super(TestCaseWrongEncoding, self).__init__(methodName)
-        self.patch = mock.patch('sickle.app.requests.get', mock_get)
+        self.patch = mock.patch.object(Session, 'get', mock_get)
 
     def setUp(self):
         self.patch.start()

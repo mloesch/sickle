@@ -111,6 +111,7 @@ class Sickle(object):
         self.class_mapping = class_mapping or DEFAULT_CLASS_MAP
         self.encoding = encoding
         self.request_args = request_args
+        self.session = requests.Session()
 
     def harvest(self, **kwargs):  # pragma: no cover
         """Make HTTP requests to the OAI server.
@@ -134,8 +135,8 @@ class Sickle(object):
 
     def _request(self, kwargs):
         if self.http_method == 'GET':
-            return requests.get(self.endpoint, params=kwargs, **self.request_args)
-        return requests.post(self.endpoint, data=kwargs, **self.request_args)
+            return self.session.get(self.endpoint, params=kwargs, **self.request_args)
+        return self.session.post(self.endpoint, data=kwargs, **self.request_args)
 
     def ListRecords(self, ignore_deleted=False, **kwargs):
         """Issue a ListRecords request.
