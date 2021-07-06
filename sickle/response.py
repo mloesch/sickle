@@ -6,6 +6,7 @@
     :copyright: Copyright 2015 Mathias Loesch
 """
 
+import logging
 from lxml import etree
 
 XMLParser = etree.XMLParser(remove_blank_text=True, recover=True, resolve_entities=False)
@@ -34,6 +35,10 @@ class OAIResponse(object):
     @property
     def xml(self):
         """The server's response as parsed XML."""
+        if (self.http_response.headers.get('Content-Type') !=
+            'application/xml'):
+            logging.warn('received non-XML response %s',
+                         self.http_response.headers.get('Content-Type'))
         return etree.XML(self.http_response.content,
                          parser=XMLParser)
 
