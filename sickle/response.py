@@ -8,7 +8,7 @@
 
 from lxml import etree
 
-XMLParser = etree.XMLParser(remove_blank_text=True, recover=True, resolve_entities=False)
+XMLParser = etree.XMLParser(remove_blank_text=True, huge_tree=True, recover=True, resolve_entities=False)
 
 
 class OAIResponse(object):
