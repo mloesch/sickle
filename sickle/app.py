@@ -179,7 +179,10 @@ class Sickle(object):
         return Identify(self.harvest(**params))
 
     def GetRecord(self, **kwargs):
-        """Issue a ListSets request."""
+        """Issue a GetRecord request.
+        
+        :rtype: :class:`sickle.models.Record`
+        """
         params = kwargs
         params.update({'verb': 'GetRecord'})
         record = self.iterator(self, params).next()
