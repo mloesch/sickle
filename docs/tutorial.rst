@@ -23,7 +23,7 @@ Issuing Requests
 ================
 
 Sickle provides methods for each of the six OAI verbs (ListRecords, GetRecord,
-Idenitfy, ListSets, ListMetadataFormats, ListIdentifiers). Start with a
+Identify, ListSets, ListMetadataFormats, ListIdentifiers). Start with a
 ListRecords request::
 
     >>> records = sickle.ListRecords(metadataPrefix='oai_dc')
