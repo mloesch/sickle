@@ -179,7 +179,7 @@ class Sickle(object):
         return Identify(self.harvest(**params))
 
     def GetRecord(self, **kwargs):
-        """Issue a ListSets request."""
+        """Issue a GetRecord request."""
         params = kwargs
         params.update({'verb': 'GetRecord'})
         record = self.iterator(self, params).next()
